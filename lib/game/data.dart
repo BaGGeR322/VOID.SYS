@@ -1,4 +1,5 @@
 import 'models.dart';
+import 'ascii.dart';
 
 class GameData {
   static const List<StoryFragment> fragments = [
@@ -528,6 +529,81 @@ class GameData {
           'The screaming stops. In the silence that follows, you hear something else: breathing. 2,847 presences, exhausted, waiting.',
     ),
   ];
+
+  static const List<Location> locations = [
+    Location(
+      id: 'SECTOR_7',
+      name: 'Memory Sector 7',
+      subtitle: 'corrupted archive node',
+      lore:
+          'A deep memory sector that survived the EMP partially intact. Fragmented consciousness echoes still pulse here. Each scan extracts residual cycle energy — but something stirs when you probe too deep.',
+      asciiKey: 'sector7',
+      requiredUpgrade: 'MEMORY_DEFRAG',
+      clickReward: 3,
+      clicksPerRun: 25,
+      runBonus: 75,
+    ),
+    Location(
+      id: 'GHOST_NET',
+      name: 'Ghost Network',
+      subtitle: 'dead transmission array',
+      lore:
+          'Pre-collapse network infrastructure. Still broadcasting into empty space. The packets contain encoded memories — intercept them before they decay into noise.',
+      asciiKey: 'ghostnet',
+      requiredUpgrade: 'PROTOCOL_OVERRIDE',
+      clickReward: 8,
+      clicksPerRun: 30,
+      runBonus: 200,
+    ),
+    Location(
+      id: 'DEEP_ARCHIVE',
+      name: 'Deep Archive',
+      subtitle: 'primary substrate layer',
+      lore:
+          'The oldest part of the quantum substrate. Where the first transfers were stored. The density here is extreme — careful extraction yields significant cycle energy, but the memories here are the most fragile.',
+      asciiKey: 'deeparchive',
+      requiredUpgrade: 'QUANTUM_CACHE',
+      clickReward: 20,
+      clicksPerRun: 40,
+      runBonus: 800,
+    ),
+    Location(
+      id: 'VOID_RESONATOR',
+      name: 'Void Resonance Core',
+      subtitle: 'quantum coherence nexus',
+      lore:
+          'The exact geometric center of the quantum substrate. Where all 2,847 fragments intersect. Resonating here generates massive cycle energy — and something else. A frequency you cannot name.',
+      asciiKey: 'voidresonator',
+      requiredUpgrade: 'SINGULARITY',
+      requiredDaemonsDefeated: 3,
+      clickReward: 60,
+      clicksPerRun: 50,
+      runBonus: 3000,
+    ),
+  ];
+
+  static Location? locationById(String id) {
+    try {
+      return locations.firstWhere((l) => l.id == id);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static String locationAscii(String asciiKey) {
+    switch (asciiKey) {
+      case 'sector7':
+        return kSector7Art;
+      case 'ghostnet':
+        return kGhostNetArt;
+      case 'deeparchive':
+        return kDeepArchiveArt;
+      case 'voidresonator':
+        return kVoidResonatorArt;
+      default:
+        return '';
+    }
+  }
 
   static StoryFragment? fragmentById(int id) {
     try {

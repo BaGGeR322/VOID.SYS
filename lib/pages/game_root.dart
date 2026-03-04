@@ -3,12 +3,14 @@ import 'dart:async';
 import 'package:jaspr/dom.dart';
 import 'package:jaspr/jaspr.dart';
 
+import '../components/settings_panel.dart';
 import '../game/engine.dart';
 import '../game/models.dart';
 import '../game/storage.dart';
 import 'tab_core.dart';
 import 'tab_encounter.dart';
 import 'tab_end.dart';
+import 'tab_explore.dart';
 import 'tab_memory.dart';
 import 'tab_system.dart';
 
@@ -98,14 +100,6 @@ class GameRoot extends StatefulComponent {
             'box-shadow': '0 0 8px rgba(0,255,65,0.3)',
           },
         ),
-        css('&--locked').styles(
-          color: const Color('#1a2a1a'),
-          raw: {
-            'border': '1px solid #1a2a1a',
-            'cursor': 'default',
-            'opacity': '0.4',
-          },
-        ),
       ]),
       css('.nav-cycles').styles(
         color: const Color('#006614'),
@@ -147,6 +141,9 @@ class _GameRootState extends State<GameRoot> {
       resetGame: _resetGame,
       markFragmentViewed: (id) => _update((s) => s.copyWith(viewedFragments: <int>{...s.viewedFragments, id})),
       abandonEncounter: () => _update(GameEngine.abandonEncounter),
+      enterLocation: (id) => _update((s) => GameEngine.enterLocation(s, id)),
+      clickLocation: () => _update(GameEngine.clickLocation),
+      exitLocation: () => _update(GameEngine.exitLocation),
     );
 
     if (kIsWeb) {
@@ -206,6 +203,7 @@ class _GameRootState extends State<GameRoot> {
       ('core', 'CORE'),
       ('memory', 'MEMORY'),
       ('system', 'SYSTEM'),
+      ('explore', 'EXPLORE'),
       ('daemon', 'DAEMON'),
       ('void', 'VOID'),
     ];
@@ -221,6 +219,7 @@ class _GameRootState extends State<GameRoot> {
       div(classes: 'nav-cycles', [
         .text('⬡ ${_state.cycles.toStringAsFixed(0)} cycles'),
       ]),
+      const SettingsPanel(),
     ]);
   }
 
@@ -228,11 +227,7 @@ class _GameRootState extends State<GameRoot> {
     final isUnlocked = _state.unlockedTabs.contains(id);
     final isActive = _state.activeTab == id;
 
-    if (!isUnlocked) {
-      return span(classes: 'nav-tab nav-tab--locked', [
-        .text('[ ???? ]'),
-      ]);
-    }
+    if (!isUnlocked) return span([]);
 
     return button(
       classes: isActive ? 'nav-tab nav-tab--active' : 'nav-tab',
@@ -245,10 +240,10 @@ class _GameRootState extends State<GameRoot> {
     return switch (_state.activeTab) {
       'memory' => TabMemory(state: _state, actions: _actions),
       'system' => TabSystem(state: _state, actions: _actions),
+      'explore' => TabExplore(state: _state, actions: _actions),
       'daemon' => TabEncounter(state: _state, actions: _actions),
       'void' => TabEnd(state: _state, actions: _actions),
       _ => TabCore(state: _state, actions: _actions),
     };
   }
-
 }

@@ -271,8 +271,8 @@ Every single cycle.
             },
           ),
           css('.void-subtitle').styles(
-            color: const Color('#00aa28'),
             margin: .only(bottom: 20.px),
+            color: const Color('#00aa28'),
             raw: {'font-style': 'italic'},
           ),
           css('.void-locked').styles(
@@ -297,14 +297,14 @@ Every single cycle.
             raw: {'letter-spacing': '3px', 'margin-bottom': '8px'},
           ),
           css('.choice-desc').styles(
-            color: const Color('#00aa28'),
             margin: .only(bottom: 8.px),
+            color: const Color('#00aa28'),
             raw: {'line-height': '1.6'},
           ),
           css('.choice-warning').styles(
+            margin: .only(bottom: 10.px),
             color: const Color('#ff4466'),
             fontSize: 13.px,
-            margin: .only(bottom: 10.px),
           ),
           css('.void-stats', [
             css('&').styles(
@@ -335,9 +335,9 @@ Every single cycle.
             },
           ),
           css('.ending-art').styles(
+            margin: .only(bottom: 20.px),
             color: const Color('#00aa28'),
             fontSize: 13.px,
-            margin: .only(bottom: 20.px),
             raw: {'line-height': '1.4'},
           ),
           css('.ending-text').styles(
@@ -352,13 +352,13 @@ Every single cycle.
             raw: {'line-height': '1.8', 'margin-bottom': '16px'},
           ),
           css('.ending-stats-label').styles(
-            color: const Color('#00aa28'),
             margin: .only(bottom: 8.px),
+            color: const Color('#00aa28'),
             raw: {'letter-spacing': '2px'},
           ),
           css('.ending-thanks').styles(
-            color: const Color('#00ff41'),
             margin: .only(top: 8.px),
+            color: const Color('#00ff41'),
             raw: {'text-shadow': '0 0 10px rgba(0,255,65,0.4)'},
           ),
         ]),

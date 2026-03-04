@@ -144,8 +144,8 @@ class TabSystem extends StatelessComponent {
         css('.tab-system', [
           css('&').styles(padding: .all(8.px)),
           css('.system-header').styles(
-            fontSize: 22.px,
             margin: .only(bottom: 16.px),
+            fontSize: 22.px,
             raw: {'letter-spacing': '4px'},
           ),
           css('.system-grid').styles(
@@ -153,9 +153,9 @@ class TabSystem extends StatelessComponent {
             raw: {'gap': '16px', 'flex-wrap': 'wrap', 'margin-bottom': '20px'},
           ),
           css('.section-label').styles(
+            margin: .only(bottom: 8.px),
             color: const Color('#00aa28'),
             fontSize: 13.px,
-            margin: .only(bottom: 8.px),
             raw: {
               'letter-spacing': '3px',
               'border-bottom': '1px solid #1a3d1a',
@@ -163,25 +163,26 @@ class TabSystem extends StatelessComponent {
             },
           ),
           css('.system-map-section').styles(
-            raw: {'flex': '1', 'min-width': '260px'},
             padding: .all(12.px),
             border: .all(style: .solid, color: const Color('#1a3d1a'), width: 1.px),
+            raw: {'flex': '1', 'min-width': '260px'},
           ),
           css('.system-map-art').styles(
-            fontSize: 13.px,
             color: const Color('#00ff41'),
+            fontFamily: const FontFamily('Space Mono'),
+            fontSize: 13.px,
             raw: {'line-height': '1.3', 'text-shadow': '0 0 6px rgba(0,255,65,0.3)'},
           ),
           css('.map-legend').styles(
             margin: .only(top: 12.px),
-            fontSize: 12.px,
             color: const Color('#006614'),
+            fontSize: 12.px,
             raw: {'line-height': '1.8'},
           ),
           css('.system-stats').styles(
-            raw: {'flex': '1', 'min-width': '240px'},
             padding: .all(12.px),
             border: .all(style: .solid, color: const Color('#1a3d1a'), width: 1.px),
+            raw: {'flex': '1', 'min-width': '240px'},
           ),
           css('.stat-row').styles(
             display: .flex,
@@ -197,8 +198,8 @@ class TabSystem extends StatelessComponent {
           ),
           css('.stat-bar').styles(margin: .only(top: 4.px)),
           css('.upgrades-header').styles(
-            fontSize: 22.px,
             margin: .symmetric(vertical: 12.px),
+            fontSize: 22.px,
             raw: {'letter-spacing': '4px'},
           ),
           css('.upgrades-list').styles(
@@ -237,9 +238,9 @@ class TabSystem extends StatelessComponent {
             fontSize: 13.px,
           ),
           css('.upgrade-desc').styles(
+            margin: .only(bottom: 8.px),
             color: const Color('#00aa28'),
             fontSize: 14.px,
-            margin: .only(bottom: 8.px),
           ),
           css('.upgrade-cost-row').styles(
             display: .flex,

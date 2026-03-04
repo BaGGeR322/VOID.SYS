@@ -22,6 +22,8 @@ class GameState {
   final DateTime gameStarted;
   final int autoDecryptTicks;
   final Set<int> viewedFragments;
+  final String? activeLocationId;
+  final int locationProgress;
 
   GameState({
     this.cycles = 0,
@@ -45,6 +47,8 @@ class GameState {
     DateTime? gameStarted,
     this.autoDecryptTicks = 0,
     Set<int>? viewedFragments,
+    this.activeLocationId,
+    this.locationProgress = 0,
   })  : purchasedUpgrades = purchasedUpgrades ?? <String>{},
         decryptedFragments = decryptedFragments ?? <int>{},
         defeatedEncounters = defeatedEncounters ?? <int>{},
@@ -70,7 +74,11 @@ class GameState {
     return base;
   }
 
-  int get maxCycles => purchasedUpgrades.contains('QUANTUM_CACHE') ? 2000 : 500;
+  int get maxCycles {
+    if (purchasedUpgrades.contains('QUANTUM_CACHE')) return 8000;
+    if (purchasedUpgrades.contains('MEMORY_DEFRAG')) return 2500;
+    return 500;
+  }
 
   Duration get uptime => DateTime.now().difference(gameStarted);
 
@@ -96,6 +104,8 @@ class GameState {
     DateTime? gameStarted,
     int? autoDecryptTicks,
     Set<int>? viewedFragments,
+    Object? activeLocationId = _unset,
+    int? locationProgress,
   }) =>
       GameState(
         cycles: cycles ?? this.cycles,
@@ -125,6 +135,10 @@ class GameState {
         gameStarted: gameStarted ?? this.gameStarted,
         autoDecryptTicks: autoDecryptTicks ?? this.autoDecryptTicks,
         viewedFragments: viewedFragments ?? this.viewedFragments,
+        activeLocationId: identical(activeLocationId, _unset)
+            ? this.activeLocationId
+            : activeLocationId as String?,
+        locationProgress: locationProgress ?? this.locationProgress,
       );
 
   Map<String, dynamic> toJson() => {
@@ -140,6 +154,8 @@ class GameState {
         'achievedEnding': achievedEnding,
         'gameStarted': gameStarted.toIso8601String(),
         'viewedFragments': viewedFragments.toList(),
+        'activeLocationId': activeLocationId,
+        'locationProgress': locationProgress,
       };
 
   factory GameState.fromJson(Map<String, dynamic> json) => GameState(
@@ -162,6 +178,8 @@ class GameState {
             : DateTime.now(),
         viewedFragments: Set<int>.from(
             ((json['viewedFragments'] as List?) ?? []).map((e) => e as int)),
+        activeLocationId: json['activeLocationId'] as String?,
+        locationProgress: json['locationProgress'] as int? ?? 0,
       );
 
   String toJsonString() => jsonEncode(toJson());
@@ -288,6 +306,9 @@ class Actions {
   final void Function() resetGame;
   final void Function(int) markFragmentViewed;
   final void Function() abandonEncounter;
+  final void Function(String) enterLocation;
+  final void Function() clickLocation;
+  final void Function() exitLocation;
 
   const Actions({
     required this.decrypt,
@@ -299,5 +320,34 @@ class Actions {
     required this.resetGame,
     required this.markFragmentViewed,
     required this.abandonEncounter,
+    required this.enterLocation,
+    required this.clickLocation,
+    required this.exitLocation,
+  });
+}
+
+class Location {
+  final String id;
+  final String name;
+  final String subtitle;
+  final String lore;
+  final String asciiKey;
+  final String? requiredUpgrade;
+  final int? requiredDaemonsDefeated;
+  final double clickReward;
+  final int clicksPerRun;
+  final double runBonus;
+
+  const Location({
+    required this.id,
+    required this.name,
+    required this.subtitle,
+    required this.lore,
+    required this.asciiKey,
+    this.requiredUpgrade,
+    this.requiredDaemonsDefeated,
+    required this.clickReward,
+    required this.clicksPerRun,
+    required this.runBonus,
   });
 }

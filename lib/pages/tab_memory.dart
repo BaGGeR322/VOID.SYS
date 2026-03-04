@@ -1,6 +1,7 @@
 import 'package:jaspr/dom.dart';
 import 'package:jaspr/jaspr.dart';
 
+import '../components/translated_text.dart';
 import '../components/typewriter.dart';
 import '../game/data.dart';
 import '../game/models.dart';
@@ -91,7 +92,14 @@ class TabMemory extends StatelessComponent {
 
     return div(classes: 'fragment fragment--decrypted', [
       div(classes: 'fragment-title', [
-        .text('${fragment.title}  //  ACT ${fragment.act}'),
+        TranslatedText(
+          key: ValueKey('tr_title_${fragment.id}'),
+          translationKey: 'fragment_${fragment.id}_title',
+          fallback: fragment.title,
+        ),
+        span(classes: 'fragment-act-label', [
+          .text('  //  ACT ${fragment.act}'),
+        ]),
       ]),
       div(classes: 'fragment-content', [
         if (!isViewed)
@@ -103,7 +111,12 @@ class TabMemory extends StatelessComponent {
             onComplete: () => actions.markFragmentViewed(fragment.id),
           )
         else
-          span([.text(fragment.content)]),
+          TranslatedText(
+            key: ValueKey('tr_content_${fragment.id}'),
+            translationKey: 'fragment_${fragment.id}_content',
+            fallback: fragment.content,
+            longForm: true,
+          ),
       ]),
     ]);
   }
@@ -177,6 +190,10 @@ class TabMemory extends StatelessComponent {
             color: const Color('#00aa28'),
             fontSize: 13.px,
             raw: {'letter-spacing': '2px'},
+          ),
+          css('.fragment-act-label').styles(
+            color: const Color('#006614'),
+            fontSize: 12.px,
           ),
           css('.fragment-content').styles(
             color: const Color('#00cc33'),

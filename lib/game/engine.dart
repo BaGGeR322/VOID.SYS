@@ -11,8 +11,7 @@ class GameEngine {
 
     const dt = 0.1;
     final gained = state.cyclesPerSecond * dt;
-    final newCycles =
-        (state.cycles + gained).clamp(0.0, state.maxCycles.toDouble());
+    final newCycles = (state.cycles + gained).clamp(0.0, state.maxCycles.toDouble());
     final newTotal = state.cyclesTotal + gained;
 
     var s = state.copyWith(cycles: newCycles, cyclesTotal: newTotal);
@@ -35,8 +34,7 @@ class GameEngine {
       return state.copyWith(isDecrypting: false, decryptProgress: 0);
     }
     final newDecrypted = {...state.decryptedFragments, next.id};
-    final newLog = _addLog(
-        state.terminalLog, '> FRAGMENT DECRYPTED: ${next.title}');
+    final newLog = _addLog(state.terminalLog, '> FRAGMENT DECRYPTED: ${next.title}');
     return state.copyWith(
       isDecrypting: false,
       decryptProgress: 0,
@@ -57,8 +55,7 @@ class GameEngine {
     if (next == null) return state.copyWith(autoDecryptTicks: 0);
 
     final newDecrypted = {...state.decryptedFragments, next.id};
-    final newLog = _addLog(
-        state.terminalLog, '> AUTO-DECRYPT: ${next.title}');
+    final newLog = _addLog(state.terminalLog, '> AUTO-DECRYPT: ${next.title}');
     return state.copyWith(
       autoDecryptTicks: 0,
       decryptedFragments: newDecrypted,
@@ -81,8 +78,12 @@ class GameEngine {
       log.add('> NEW TAB UNLOCKED: SYSTEM');
       changed = true;
     }
-    if (state.purchasedUpgrades.contains('PROTOCOL_OVERRIDE') &&
-        !tabs.contains('daemon')) {
+    if (state.purchasedUpgrades.contains('MEMORY_DEFRAG') && !tabs.contains('explore')) {
+      tabs.add('explore');
+      log.add('> NEW TAB UNLOCKED: EXPLORE');
+      changed = true;
+    }
+    if (state.purchasedUpgrades.contains('PROTOCOL_OVERRIDE') && !tabs.contains('daemon')) {
       tabs.add('daemon');
       log.add('> NEW TAB UNLOCKED: DAEMON');
       changed = true;
@@ -98,22 +99,83 @@ class GameEngine {
     return state.copyWith(unlockedTabs: tabs, terminalLog: _trim(log));
   }
 
+  static bool isLocationAvailable(GameState state, String locationId) {
+    final loc = GameData.locationById(locationId);
+    if (loc == null) return false;
+    if (loc.requiredUpgrade != null && !state.purchasedUpgrades.contains(loc.requiredUpgrade!)) {
+      return false;
+    }
+    if (loc.requiredDaemonsDefeated != null && state.defeatedEncounters.length < loc.requiredDaemonsDefeated!) {
+      return false;
+    }
+    return true;
+  }
+
+  static GameState enterLocation(GameState state, String locationId) {
+    final loc = GameData.locationById(locationId);
+    if (loc == null) return state;
+    if (!isLocationAvailable(state, locationId)) return state;
+    final log = _addLog(state.terminalLog, '> ENTERING: ${loc.name}');
+    return state.copyWith(
+      activeLocationId: locationId,
+      locationProgress: 0,
+      terminalLog: log,
+    );
+  }
+
+  static GameState clickLocation(GameState state) {
+    if (state.activeLocationId == null) return state;
+    final loc = GameData.locationById(state.activeLocationId!);
+    if (loc == null) return state;
+
+    final newProgress = state.locationProgress + 1;
+    final newCycles = (state.cycles + loc.clickReward).clamp(0.0, state.maxCycles.toDouble());
+
+    if (newProgress >= loc.clicksPerRun) {
+      final bonus = (newCycles + loc.runBonus).clamp(0.0, state.maxCycles.toDouble());
+      final log = _addLog(
+        state.terminalLog,
+        '> SCAN COMPLETE: ${loc.name} (+${loc.runBonus.toStringAsFixed(0)} bonus)',
+      );
+      return state.copyWith(
+        cycles: bonus,
+        cyclesTotal: state.cyclesTotal + loc.clickReward + loc.runBonus,
+        locationProgress: 0,
+        terminalLog: log,
+      );
+    }
+
+    return state.copyWith(
+      cycles: newCycles,
+      cyclesTotal: state.cyclesTotal + loc.clickReward,
+      locationProgress: newProgress,
+    );
+  }
+
+  static GameState exitLocation(GameState state) {
+    return state.copyWith(
+      activeLocationId: null,
+      locationProgress: 0,
+      terminalLog: _addLog(state.terminalLog, '> EXITING LOCATION'),
+    );
+  }
+
   static GameState startDecrypt(GameState state) {
     if (state.isDecrypting) return state;
     if (_nextDecryptable(state) == null) return state;
     return state.copyWith(isDecrypting: true, decryptProgress: 0);
   }
 
-  static bool canDecrypt(GameState state) =>
-      !state.isDecrypting && _nextDecryptable(state) != null;
+  static bool canDecrypt(GameState state) => !state.isDecrypting && _nextDecryptable(state) != null;
 
   static StoryFragment? _nextDecryptable(GameState state) {
     try {
-      return GameData.fragments.firstWhere((f) =>
-          !state.decryptedFragments.contains(f.id) &&
-          state.cyclesTotal >= f.cyclesRequired &&
-          (f.requiredUpgrade == null ||
-              state.purchasedUpgrades.contains(f.requiredUpgrade!)));
+      return GameData.fragments.firstWhere(
+        (f) =>
+            !state.decryptedFragments.contains(f.id) &&
+            state.cyclesTotal >= f.cyclesRequired &&
+            (f.requiredUpgrade == null || state.purchasedUpgrades.contains(f.requiredUpgrade!)),
+      );
     } catch (_) {
       return null;
     }
@@ -124,12 +186,12 @@ class GameEngine {
     if (upgrade == null) return state;
     if (state.purchasedUpgrades.contains(upgradeId)) return state;
     if (state.cycles < upgrade.cost) return state;
-    if (upgrade.requires != null &&
-        !state.purchasedUpgrades.contains(upgrade.requires!)) return state;
+    if (upgrade.requires != null && !state.purchasedUpgrades.contains(upgrade.requires!)) {
+      return state;
+    }
 
     final purchased = <String>{...state.purchasedUpgrades, upgradeId};
-    final log =
-        _addLog(state.terminalLog, '> INSTALLED: ${upgrade.name}');
+    final log = _addLog(state.terminalLog, '> INSTALLED: ${upgrade.name}');
     var s = state.copyWith(
       cycles: state.cycles - upgrade.cost,
       purchasedUpgrades: purchased,
@@ -143,8 +205,9 @@ class GameEngine {
     if (upgrade == null) return false;
     if (state.purchasedUpgrades.contains(upgradeId)) return false;
     if (state.cycles < upgrade.cost) return false;
-    if (upgrade.requires != null &&
-        !state.purchasedUpgrades.contains(upgrade.requires!)) return false;
+    if (upgrade.requires != null && !state.purchasedUpgrades.contains(upgrade.requires!)) {
+      return false;
+    }
     return true;
   }
 
@@ -153,10 +216,12 @@ class GameEngine {
     if (enc == null) return false;
     if (state.defeatedEncounters.contains(encounterId)) return false;
     if (state.cyclesTotal < enc.cyclesRequired) return false;
-    if (enc.requiredUpgrade != null &&
-        !state.purchasedUpgrades.contains(enc.requiredUpgrade!)) return false;
-    if (enc.requiredDefeated != null &&
-        !state.defeatedEncounters.contains(enc.requiredDefeated!)) return false;
+    if (enc.requiredUpgrade != null && !state.purchasedUpgrades.contains(enc.requiredUpgrade!)) {
+      return false;
+    }
+    if (enc.requiredDefeated != null && !state.defeatedEncounters.contains(enc.requiredDefeated!)) {
+      return false;
+    }
     return true;
   }
 
@@ -227,9 +292,7 @@ class GameEngine {
       );
     }
 
-    final moves = (phase == 2 && enc.phase2Moves != null)
-        ? enc.phase2Moves!
-        : enc.daemonMoves;
+    final moves = (phase == 2 && enc.phase2Moves != null) ? enc.phase2Moves! : enc.daemonMoves;
     final dMove = _selectDaemonMove(moves, rng);
 
     int playerHP = state.playerHP;
@@ -250,15 +313,13 @@ class GameEngine {
       playerHP -= dMove.damage;
     }
 
-    if (dMove.effect != 'one_shot' && dMove.effect != 'drain_cycles' &&
-        dMove.effect != 'reduce_max_hp') {
+    if (dMove.effect != 'one_shot' && dMove.effect != 'drain_cycles' && dMove.effect != 'reduce_max_hp') {
       playerHP = state.playerHP - dMove.damage;
     } else if (dMove.effect == 'drain_cycles' || dMove.effect == 'reduce_max_hp') {
       playerHP = state.playerHP - dMove.damage;
     }
 
-    clog.add(
-        '> ${enc.name}: ${dMove.name} — ${dMove.damage} damage$note');
+    clog.add('> ${enc.name}: ${dMove.name} — ${dMove.damage} damage$note');
 
     if (playerHP <= 0) {
       clog.add('> COHERENCE FAILURE — emergency retreat');
@@ -271,8 +332,7 @@ class GameEngine {
         encounterPhase: 1,
         enemyStunned: false,
         combatLog: clog,
-        terminalLog: _addLog(
-            state.terminalLog, '> ENCOUNTER FAILED: ${enc.name}'),
+        terminalLog: _addLog(state.terminalLog, '> ENCOUNTER FAILED: ${enc.name}'),
       );
     }
 
@@ -295,8 +355,7 @@ class GameEngine {
       playerHP: state.maxPlayerHP,
       enemyStunned: false,
       combatLog: [],
-      terminalLog:
-          _addLog(state.terminalLog, '> ENCOUNTER ABANDONED'),
+      terminalLog: _addLog(state.terminalLog, '> ENCOUNTER ABANDONED'),
     );
   }
 
@@ -304,21 +363,17 @@ class GameEngine {
     return state.copyWith(
       achievedEnding: ending,
       activeTab: 'void',
-      terminalLog:
-          _addLog(state.terminalLog, '> FINAL CHOICE: ${ending.toUpperCase()}'),
+      terminalLog: _addLog(state.terminalLog, '> FINAL CHOICE: ${ending.toUpperCase()}'),
     );
   }
 
   static GameState _resolveVictory(GameState state, Encounter enc) {
     final newDefeated = <int>{...state.defeatedEncounters, enc.id};
-    final newCycles =
-        (state.cycles + enc.cyclesReward).clamp(0.0, state.maxCycles.toDouble());
-    var log = _addLog(state.terminalLog,
-        '> VICTORY: ${enc.name} silenced (+${enc.cyclesReward.round()} cycles)');
+    final newCycles = (state.cycles + enc.cyclesReward).clamp(0.0, state.maxCycles.toDouble());
+    var log = _addLog(state.terminalLog, '> VICTORY: ${enc.name} silenced (+${enc.cyclesReward.round()} cycles)');
 
     var decrypted = state.decryptedFragments;
-    if (enc.unlocksFragmentId != null &&
-        !decrypted.contains(enc.unlocksFragmentId)) {
+    if (enc.unlocksFragmentId != null && !decrypted.contains(enc.unlocksFragmentId)) {
       decrypted = <int>{...decrypted, enc.unlocksFragmentId!};
       log = _addLog(log, '> FRAGMENT RECOVERED from ${enc.name}');
     }

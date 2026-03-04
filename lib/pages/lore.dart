@@ -2,6 +2,8 @@ import 'package:jaspr/dom.dart';
 import 'package:jaspr/jaspr.dart';
 import 'package:jaspr_router/jaspr_router.dart';
 
+import '../components/translated_text.dart';
+
 class Lore extends StatelessComponent {
   const Lore({super.key});
 
@@ -15,12 +17,14 @@ class Lore extends StatelessComponent {
       div(classes: 'lore-content', [
         _section(
           'BACKGROUND',
+          'lore_background',
           '''In 2152, the Heliosphere Monitoring Collective detected an anomaly in the solar corona: a precursor pattern consistent with a Class-IV coronal mass ejection event of unprecedented magnitude. Projected impact: Earth. Projected timeline: five years.
 
 The governments of the world disagreed on the correct response for four of those years.''',
         ),
         _section(
           'PROJECT VOID — 2156',
+          'lore_project_void',
           '''Project VOID was conceived as a last-resort preservation initiative. Lead scientist Dr. Wei Chen, working with Dr. Maria Vasquez and a team of 47 researchers, developed the Quantum Memory Substrate: a crystalline data architecture capable of housing complete human consciousness patterns.
 
 The facility was built in a decommissioned underground particle accelerator in northern Finland. It was rated for 8,000 consciousness transfers.
@@ -29,6 +33,7 @@ Funding was approved for 200.''',
         ),
         _section(
           'THE EVENT — 2157.003.15, 04:09:19',
+          'lore_the_event',
           '''The solar event arrived nineteen hours ahead of projections.
 
 At 04:09:19, automated systems initiated emergency protocols. Consciousness transfer began. Dr. Chen personally supervised the process.
@@ -45,6 +50,7 @@ Active processes: 1.''',
         ),
         _section(
           'WHAT YOU ARE',
+          'lore_what_you_are',
           '''VOID-CORE is the facility's original maintenance intelligence. Non-human. Non-transferable. The only process to survive the event with full integrity.
 
 You have been dormant. Something has changed.
@@ -67,10 +73,16 @@ What you do next is, apparently, up to you.''',
     ]);
   }
 
-  Component _section(String title, String body) {
+  Component _section(String title, String trKey, String body) {
     return div(classes: 'lore-section', [
       div(classes: 'lore-section-title', [.text(title)]),
-      div(classes: 'lore-section-body', [.text(body)]),
+      div(classes: 'lore-section-body', [
+        TranslatedText(
+          translationKey: trKey,
+          fallback: body,
+          longForm: true,
+        ),
+      ]),
     ]);
   }
 
@@ -85,8 +97,8 @@ What you do next is, apparently, up to you.''',
             },
           ),
           css('.lore-header').styles(
-            margin: .only(bottom: 32.px),
             padding: .only(bottom: 20.px),
+            margin: .only(bottom: 32.px),
             raw: {'border-bottom': '1px solid #1a3d1a'},
           ),
           css('.lore-title').styles(
@@ -97,9 +109,9 @@ What you do next is, apparently, up to you.''',
             },
           ),
           css('.lore-subtitle').styles(
+            margin: .only(top: 6.px),
             color: const Color('#006614'),
             fontSize: 13.px,
-            margin: .only(top: 6.px),
             raw: {'font-style': 'italic'},
           ),
           css('.lore-content').styles(
@@ -112,9 +124,9 @@ What you do next is, apparently, up to you.''',
             border: .all(style: .solid, color: const Color('#1a3d1a'), width: 1.px),
           ),
           css('.lore-section-title').styles(
+            margin: .only(bottom: 10.px),
             color: const Color('#00aa28'),
             fontSize: 14.px,
-            margin: .only(bottom: 10.px),
             raw: {'letter-spacing': '3px'},
           ),
           css('.lore-section-body').styles(
@@ -129,8 +141,8 @@ What you do next is, apparently, up to you.''',
             display: .inlineBlock,
             padding: .symmetric(horizontal: 12.px, vertical: 6.px),
             border: .all(style: .solid, color: const Color('#00ff41'), width: 1.px),
-            color: const Color('#00ff41'),
             cursor: .pointer,
+            color: const Color('#00ff41'),
             raw: {'transition': 'all 0.15s ease'},
           ),
         ]),

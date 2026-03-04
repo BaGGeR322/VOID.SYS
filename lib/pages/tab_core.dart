@@ -41,7 +41,7 @@ class TabCore extends StatelessComponent {
       div(classes: 'section-label', [.text('CYCLE ACCUMULATION')]),
       div(classes: 'cycle-display', [
         GlitchText(
-          text: '${state.cycles.toStringAsFixed(1)}',
+          text: state.cycles.toStringAsFixed(1),
           intensity: GlitchIntensity.subtle,
         ),
         span(classes: 'cycle-unit', [.text(' cycles')]),
@@ -147,9 +147,10 @@ class TabCore extends StatelessComponent {
             padding: .all(8.px),
           ),
           css('.ascii-header').styles(
-            color: const Color('#00ff41'),
-            fontSize: 14.px,
             margin: .only(bottom: 16.px),
+            color: const Color('#00ff41'),
+            fontFamily: const FontFamily('Space Mono'),
+            fontSize: 14.px,
             raw: {
               'line-height': '1.2',
               'text-shadow': '0 0 8px rgba(0,255,65,0.5)',
