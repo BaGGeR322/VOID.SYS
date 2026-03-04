@@ -1,0 +1,14 @@
+{
+  "nav_core": "NUCLEO",
+  "nav_memory": "MEMORIA",
+  "nav_system": "SISTEMA",
+  "nav_explore": "SECTORES",
+  "nav_daemon": "DEMONIOS",
+  "nav_void": "VACIO",
+  "ui_settings": "AJUSTES",
+  "ui_language": "IDIOMA",
+  "system_header": "DIAGNOSTICO DEL SISTEMA",
+  "explore_header": "EXPLORACION DE SECTORES",
+  "enc_header": "INTERFAZ DE DEMONIOS",
+  "memory_header": "ARCHIVO DE MEMORIA"
+}

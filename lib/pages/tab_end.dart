@@ -2,6 +2,7 @@ import 'package:jaspr/dom.dart';
 import 'package:jaspr/jaspr.dart';
 
 import '../components/term_button.dart';
+import '../components/translated_text.dart';
 import '../components/typewriter.dart';
 import '../game/ascii.dart';
 import '../game/models.dart';
@@ -28,16 +29,26 @@ class TabEnd extends StatelessComponent {
     final genesisDefeated = state.defeatedEncounters.contains(4);
 
     return div(classes: 'tab-end', [
-      div(classes: 'void-header', [.text('V O I D   T E R M I N A L')]),
+      div(classes: 'void-header', [
+        TranslatedText(
+          translationKey: 'end_void_terminal',
+          fallback: 'V O I D   T E R M I N A L',
+        ),
+      ]),
       div(classes: 'void-subtitle', [
-        .text(genesisDefeated
-            ? 'The collective has been silenced. The choice is yours.'
-            : 'Defeat GENESIS to unlock the final protocol.'),
+        TranslatedText(
+          translationKey: genesisDefeated ? 'end_subtitle_unlocked' : 'end_subtitle_locked',
+          fallback: genesisDefeated
+              ? 'The collective has been silenced. The choice is yours.'
+              : 'Defeat GENESIS to unlock the final protocol.',
+        ),
       ]),
       if (!genesisDefeated)
         div(classes: 'void-locked', [
-          pre(classes: 'void-waiting-art', [
-            .text(r'''
+          div(classes: 'void-waiting-art', [
+            TranslatedText(
+              translationKey: 'end_waiting_block',
+              fallback: r'''
     .  .  .  .  .  .  .  .  .
   . . . . . . . . . . . . . . .
     .  .  .  .  .  .  .  .  .
@@ -47,7 +58,9 @@ class TabEnd extends StatelessComponent {
     312 years.
     
     you are not ready yet.
-    '''),
+    ''',
+              longForm: true,
+            ),
           ]),
         ])
       else
@@ -78,21 +91,39 @@ class TabEnd extends StatelessComponent {
           ),
         ]),
       div(classes: 'void-stats', [
-        div(classes: 'void-stats-label', [.text('FINAL STATISTICS')]),
-        div(classes: 'void-stat-row', [
-          .text(
-              '  cycles accumulated: ${state.cyclesTotal.toStringAsFixed(0)}'),
+        div(classes: 'void-stats-label', [
+          TranslatedText(
+            translationKey: 'end_final_statistics',
+            fallback: 'FINAL STATISTICS',
+          ),
         ]),
         div(classes: 'void-stat-row', [
-          .text('  fragments recovered: ${state.decryptedFragments.length}/25'),
+          TranslatedText(
+            translationKey: 'end_cycles_accumulated',
+            fallback: '  cycles accumulated: {value}',
+            params: {'value': state.cyclesTotal.toStringAsFixed(0)},
+          ),
         ]),
         div(classes: 'void-stat-row', [
-          .text(
-              '  daemons silenced: ${state.defeatedEncounters.length}/5'),
+          TranslatedText(
+            translationKey: 'end_fragments_recovered',
+            fallback: '  fragments recovered: {value}/25',
+            params: {'value': '${state.decryptedFragments.length}'},
+          ),
         ]),
         div(classes: 'void-stat-row', [
-          .text(
-              '  upgrades installed: ${state.purchasedUpgrades.length}/12'),
+          TranslatedText(
+            translationKey: 'end_daemons_silenced',
+            fallback: '  daemons silenced: {value}/5',
+            params: {'value': '${state.defeatedEncounters.length}'},
+          ),
+        ]),
+        div(classes: 'void-stat-row', [
+          TranslatedText(
+            translationKey: 'end_upgrades_installed',
+            fallback: '  upgrades installed: {value}/12',
+            params: {'value': '${state.purchasedUpgrades.length}'},
+          ),
         ]),
       ]),
     ]);
@@ -106,11 +137,27 @@ class TabEnd extends StatelessComponent {
     required TermButtonVariant variant,
   }) {
     return div(classes: 'void-choice', [
-      div(classes: 'choice-title', [.text(title)]),
-      div(classes: 'choice-desc', [.text(description)]),
-      div(classes: 'choice-warning', [.text('! $warning')]),
+      div(classes: 'choice-title', [
+        TranslatedText(
+          translationKey: 'end_choice_${id}_title',
+          fallback: title,
+        ),
+      ]),
+      div(classes: 'choice-desc', [
+        TranslatedText(
+          translationKey: 'end_choice_${id}_description',
+          fallback: description,
+        ),
+      ]),
+      div(classes: 'choice-warning', [
+        TranslatedText(
+          translationKey: 'end_choice_${id}_warning',
+          fallback: '! $warning',
+        ),
+      ]),
       TermButton(
         label: 'CHOOSE $title',
+        translationKey: 'end_choose_$id',
         onPressed: () => actions.chooseEnding(id),
         variant: variant,
       ),
@@ -131,7 +178,6 @@ class TabEnd extends StatelessComponent {
       'synthesis' => _synthesisText,
       _ => '',
     };
-
     final titleText = switch (ending) {
       'consume' => 'E N D I N G   I — C O N S U M E',
       'restore' => 'E N D I N G   I I — R E S T O R E',
@@ -140,27 +186,68 @@ class TabEnd extends StatelessComponent {
     };
 
     return div(classes: 'ending-screen', [
-      div(classes: 'ending-title', [.text(titleText)]),
+      div(classes: 'ending-title', [
+        TranslatedText(
+          translationKey: 'end_title_$ending',
+          fallback: titleText,
+        ),
+      ]),
       pre(classes: 'ending-art', [.text(art)]),
       div(classes: 'ending-text', [
         TypewriterText(
           key: ValueKey('ending_$ending'),
           text: text,
+          translationKey: 'end_text_$ending',
           speed: 30,
           charsPerTick: 1,
         ),
       ]),
       div(classes: 'ending-stats', [
-        div(classes: 'ending-stats-label', [.text('VOID.SYS — FINAL LOG')]),
-        div([.text('  cycles consumed: ${state.cyclesTotal.toStringAsFixed(0)}')]),
-        div([.text('  fragments recovered: ${state.decryptedFragments.length}/25')]),
-        div([.text('  daemons silenced: ${state.defeatedEncounters.length}/5')]),
-        div([.text('  uptime: ${_formatUptime(state.uptime)}')]),
+        div(classes: 'ending-stats-label', [
+          TranslatedText(
+            translationKey: 'end_final_log',
+            fallback: 'VOID.SYS — FINAL LOG',
+          ),
+        ]),
+        div([
+          TranslatedText(
+            translationKey: 'end_cycles_consumed',
+            fallback: '  cycles consumed: {value}',
+            params: {'value': state.cyclesTotal.toStringAsFixed(0)},
+          ),
+        ]),
+        div([
+          TranslatedText(
+            translationKey: 'end_fragments_recovered',
+            fallback: '  fragments recovered: {value}/25',
+            params: {'value': '${state.decryptedFragments.length}'},
+          ),
+        ]),
+        div([
+          TranslatedText(
+            translationKey: 'end_daemons_silenced',
+            fallback: '  daemons silenced: {value}/5',
+            params: {'value': '${state.defeatedEncounters.length}'},
+          ),
+        ]),
+        div([
+          TranslatedText(
+            translationKey: 'end_uptime',
+            fallback: '  uptime: {value}',
+            params: {'value': _formatUptime(state.uptime)},
+          ),
+        ]),
         div([.text('')]),
-        div(classes: 'ending-thanks', [.text('// thank you for playing VOID.SYS //')]),
+        div(classes: 'ending-thanks', [
+          TranslatedText(
+            translationKey: 'end_thanks',
+            fallback: '// thank you for playing VOID.SYS //',
+          ),
+        ]),
       ]),
       TermButton(
         label: 'RESET PROCESS',
+        translationKey: 'end_reset_process',
         onPressed: actions.resetGame,
         variant: TermButtonVariant.danger,
       ),
@@ -280,8 +367,8 @@ Every single cycle.
             raw: {'border': '1px solid #1a3d1a'},
           ),
           css('.void-waiting-art').styles(
-            color: const Color('#334433'),
-            fontSize: 14.px,
+            color: const Color('#00aa28'),
+            fontSize: 15.px,
           ),
           css('.void-choices').styles(
             display: .flex,
@@ -313,13 +400,13 @@ Every single cycle.
               raw: {'border': '1px solid #1a3d1a'},
             ),
             css('.void-stats-label').styles(
-              color: const Color('#006614'),
-              fontSize: 13.px,
+              color: const Color('#00aa28'),
+              fontSize: 14.px,
               raw: {'letter-spacing': '2px', 'margin-bottom': '8px'},
             ),
             css('.void-stat-row').styles(
-              color: const Color('#334433'),
-              fontSize: 14.px,
+              color: const Color('#00aa28'),
+              fontSize: 15.px,
               raw: {'line-height': '1.8'},
             ),
           ]),
@@ -337,7 +424,7 @@ Every single cycle.
           css('.ending-art').styles(
             margin: .only(bottom: 20.px),
             color: const Color('#00aa28'),
-            fontSize: 13.px,
+            fontSize: 14.px,
             raw: {'line-height': '1.4'},
           ),
           css('.ending-text').styles(

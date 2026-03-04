@@ -5,6 +5,7 @@ import 'package:jaspr/jaspr.dart';
 
 import '../services/file_reader.dart';
 import '../services/translation_service.dart';
+import 'translated_text.dart';
 
 class SettingsPanel extends StatefulComponent {
   const SettingsPanel({super.key});
@@ -144,12 +145,14 @@ class _SettingsPanelState extends State<SettingsPanel> {
   String? _message;
   bool _isError = false;
   int _loadedCount = 0;
+  String _language = 'en';
 
   @override
   void initState() {
     super.initState();
     if (kIsWeb) {
       _loadedCount = translationCount();
+      _language = getActiveLanguage();
     }
   }
 
@@ -167,7 +170,8 @@ class _SettingsPanelState extends State<SettingsPanel> {
           setTranslations(filtered);
           setState(() {
             _loadedCount = filtered.length;
-            _message = '${filtered.length} translation keys loaded';
+            _message = '{count} translation keys loaded'
+                .replaceAll('{count}', '${filtered.length}');
             _isError = false;
           });
         } catch (_) {
@@ -193,6 +197,15 @@ class _SettingsPanelState extends State<SettingsPanel> {
     });
   }
 
+  void _setLanguage(String language) {
+    setActiveLanguage(language);
+    setState(() {
+      _language = language;
+      _message = 'active language: ${language.toUpperCase()}';
+      _isError = false;
+    });
+  }
+
   @override
   Component build(BuildContext context) {
     final hasTranslations = _loadedCount > 0;
@@ -213,35 +226,86 @@ class _SettingsPanelState extends State<SettingsPanel> {
       ),
       div(classes: 'settings-overlay', [
         div(classes: 'settings-panel', [
-          div(classes: 'settings-title', [.text('SETTINGS')]),
+          div(classes: 'settings-title', [
+            TranslatedText(
+              translationKey: 'ui_settings',
+              fallback: 'SETTINGS',
+            ),
+          ]),
           div(classes: 'settings-subtitle', [
-            .text('// system configuration //'),
+            TranslatedText(
+              translationKey: 'ui_system_configuration',
+              fallback: '// system configuration //',
+            ),
           ]),
           div(classes: 'settings-section', [
-            div(classes: 'settings-label', [.text('LOCALIZATION')]),
+            div(classes: 'settings-label', [
+              TranslatedText(
+                translationKey: 'ui_language',
+                fallback: 'LANGUAGE',
+              ),
+            ]),
+            div(classes: 'settings-btn-row', [
+              for (final lang in supportedLanguages())
+                button(
+                  classes: _language == lang ? 'settings-btn settings-status--active' : 'settings-btn',
+                  onClick: () => _setLanguage(lang),
+                  [.text('[ ${lang.toUpperCase()} ]')],
+                ),
+            ]),
+          ]),
+          div(classes: 'settings-section', [
+            div(classes: 'settings-label', [
+              TranslatedText(
+                translationKey: 'ui_localization',
+                fallback: 'LOCALIZATION',
+              ),
+            ]),
             div(
               classes: hasTranslations ? 'settings-status settings-status--active' : 'settings-status',
               [
-                .text(hasTranslations ? '> $_loadedCount keys loaded' : '> no translation loaded'),
+                TranslatedText(
+                  translationKey:
+                      hasTranslations ? 'ui_keys_loaded' : 'ui_no_translation_loaded',
+                  fallback: hasTranslations
+                      ? '> {count} keys loaded'
+                      : '> no translation loaded',
+                  params: {'count': '$_loadedCount'},
+                ),
               ],
             ),
             div(classes: 'settings-btn-row', [
               button(
                 classes: 'settings-btn',
                 onClick: () => _uploadFile(),
-                [.text('[ UPLOAD .json ]')],
+                [
+                  TranslatedText(
+                    translationKey: 'ui_upload_json_button',
+                    fallback: '[ UPLOAD .json ]',
+                  ),
+                ],
               ),
               a(
                 href: '/sample_translation.json',
                 download: 'sample_translation.json',
                 classes: 'settings-btn settings-btn--link',
-                [.text('[ DOWNLOAD SAMPLE ]')],
+                [
+                  TranslatedText(
+                    translationKey: 'ui_download_sample_button',
+                    fallback: '[ DOWNLOAD SAMPLE ]',
+                  ),
+                ],
               ),
               if (hasTranslations)
                 button(
                   classes: 'settings-btn settings-btn--danger',
                   onClick: () => _clear(),
-                  [.text('[ CLEAR ]')],
+                  [
+                    TranslatedText(
+                      translationKey: 'ui_clear_button',
+                      fallback: '[ CLEAR ]',
+                    ),
+                  ],
                 ),
             ]),
             if (_message != null)
@@ -249,14 +313,23 @@ class _SettingsPanelState extends State<SettingsPanel> {
                 classes: _isError
                     ? 'settings-message settings-message--error'
                     : 'settings-message settings-message--ok',
-                [.text(_isError ? '! $_message' : '> $_message')],
+                [
+                  TranslatedText.dynamic(
+                    fallback: _isError ? '! ${_message!}' : '> ${_message!}',
+                  ),
+                ],
               ),
           ]),
           div(classes: 'settings-close-row', [
             button(
               classes: 'settings-btn',
               onClick: () => setState(() => _open = false),
-              [.text('[ CLOSE ]')],
+              [
+                TranslatedText(
+                  translationKey: 'ui_close_button',
+                  fallback: '[ CLOSE ]',
+                ),
+              ],
             ),
           ]),
         ]),

@@ -4,6 +4,7 @@ import 'package:jaspr/jaspr.dart';
 import '../components/ascii_bar.dart';
 import '../components/interactive_ascii.dart';
 import '../components/term_button.dart';
+import '../components/translated_text.dart';
 import '../game/ascii.dart';
 import '../game/data.dart';
 import '../game/engine.dart';
@@ -22,12 +23,33 @@ class TabSystem extends StatelessComponent {
   @override
   Component build(BuildContext context) {
     return div(classes: 'tab-system', [
-      div(classes: 'system-header', [.text('SYSTEM DIAGNOSTICS')]),
+      div(classes: 'system-header', [
+        TranslatedText(
+          translationKey: 'system_header',
+          fallback: 'SYSTEM DIAGNOSTICS',
+        ),
+      ]),
       div(classes: 'system-grid', [
         _buildSystemMap(),
         _buildStats(),
       ]),
-      div(classes: 'upgrades-header', [.text('AVAILABLE UPGRADES')]),
+      div(classes: 'upgrades-header', [
+        TranslatedText(
+          translationKey: 'system_module_fabricator',
+          fallback: 'MODULE FABRICATOR',
+        ),
+      ]),
+      div(classes: 'upgrades-list', [
+        _buildModule('BULWARK_FRAME', 'Reinforces shell. +6 armor.'),
+        _buildModule('THROUGHPUT_CORE', 'Optimizes throughput. +level and cycle rate.'),
+        _buildModule('HARMONIC_BUFFER', 'Raises survivability of sector runs.'),
+      ]),
+      div(classes: 'upgrades-header', [
+        TranslatedText(
+          translationKey: 'system_available_upgrades',
+          fallback: 'AVAILABLE UPGRADES',
+        ),
+      ]),
       div(classes: 'upgrades-list', [
         for (final upgrade in GameData.upgrades) _buildUpgrade(upgrade),
       ]),
@@ -36,28 +58,33 @@ class TabSystem extends StatelessComponent {
 
   Component _buildSystemMap() {
     return div(classes: 'system-map-section', [
-      div(classes: 'section-label', [.text('SUBSTRATE MAP  [ click nodes to navigate ]')]),
+      div(classes: 'section-label', [
+        TranslatedText(
+          translationKey: 'system_substrate_map',
+          fallback: 'SUBSTRATE MAP  [ click nodes to navigate ]',
+        ),
+      ]),
       div(classes: 'system-map-art', [
         InteractiveAscii(
           text: kSystemMap,
           actions: [
             AsciiAction(
-              region: const AsciiRegion(col1: 17, row1: 2, col2: 23, row2: 2),
+              region: const AsciiRegion(col1: 16, row1: 1, col2: 23, row2: 1),
               onTap: () => actions.switchTab('core'),
               hoverHint: 'Navigate to CORE',
             ),
             AsciiAction(
-              region: const AsciiRegion(col1: 4, row1: 6, col2: 8, row2: 6),
+              region: const AsciiRegion(col1: 3, row1: 5, col2: 10, row2: 5),
               onTap: () => actions.switchTab('memory'),
               hoverHint: 'Navigate to MEMORY',
             ),
             AsciiAction(
-              region: const AsciiRegion(col1: 30, row1: 6, col2: 34, row2: 6),
+              region: const AsciiRegion(col1: 29, row1: 5, col2: 36, row2: 5),
               onTap: () => actions.switchTab('daemon'),
               hoverHint: 'Navigate to DAEMON NET',
             ),
             AsciiAction(
-              region: const AsciiRegion(col1: 15, row1: 10, col2: 23, row2: 10),
+              region: const AsciiRegion(col1: 14, row1: 9, col2: 25, row2: 9),
               onTap: () => actions.switchTab('system'),
               hoverHint: 'Navigate to SYSTEM STORE',
             ),
@@ -65,10 +92,30 @@ class TabSystem extends StatelessComponent {
         ),
       ]),
       div(classes: 'map-legend', [
-        div([.text('[ CORE ] — active process (click to navigate)')]),
-        div([.text('[ MEM  ] — memory substrate')]),
-        div([.text('[ NET  ] — network interface (daemon encounters)')]),
-        div([.text('[ STORE ] — cycle storage & upgrades')]),
+        div([
+          TranslatedText(
+            translationKey: 'system_map_legend_core',
+            fallback: '[ CORE ] — active process (click to navigate)',
+          ),
+        ]),
+        div([
+          TranslatedText(
+            translationKey: 'system_map_legend_mem',
+            fallback: '[ MEM  ] — memory substrate',
+          ),
+        ]),
+        div([
+          TranslatedText(
+            translationKey: 'system_map_legend_net',
+            fallback: '[ NET  ] — network interface (daemon encounters)',
+          ),
+        ]),
+        div([
+          TranslatedText(
+            translationKey: 'system_map_legend_store',
+            fallback: '[ STORE ] — cycle storage & upgrades',
+          ),
+        ]),
       ]),
     ]);
   }
@@ -84,18 +131,28 @@ class TabSystem extends StatelessComponent {
         : '${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
 
     return div(classes: 'system-stats', [
-      div(classes: 'section-label', [.text('DIAGNOSTICS')]),
+      div(classes: 'section-label', [
+        TranslatedText(
+          translationKey: 'system_diagnostics',
+          fallback: 'DIAGNOSTICS',
+        ),
+      ]),
       _statRow('status', 'OPERATIONAL'),
       _statRow('uptime', uptimeStr),
       _statRow('cycle rate', '${state.cyclesPerSecond.toStringAsFixed(2)}/s'),
       _statRow('cycle storage', '${state.maxCycles}'),
       _statRow('cycles stored', state.cycles.toStringAsFixed(1)),
       _statRow('cycles total', state.cyclesTotal.toStringAsFixed(0)),
+      _statRow('shards', '${state.shards}'),
+      _statRow('level', '${state.playerLevel}'),
+      _statRow('armor', '${state.armor}'),
       _statRow('upgrades', '${state.purchasedUpgrades.length}/12'),
       _statRow('fragments', '${state.decryptedFragments.length}/25'),
       _statRow('daemons', '${state.defeatedEncounters.length}/5'),
       div(classes: 'stat-row', [
-        span(classes: 'stat-key', [.text('cycles/sec bar:')]),
+        span(classes: 'stat-key', [
+          TranslatedText.dynamic(fallback: 'cycles/sec bar:'),
+        ]),
       ]),
       div(classes: 'stat-bar', [
         AsciiBar(
@@ -108,10 +165,48 @@ class TabSystem extends StatelessComponent {
     ]);
   }
 
+  Component _buildModule(String id, String description) {
+    final installed = state.installedModules.contains(id);
+    final cost = GameEngine.moduleCosts[id] ?? 0;
+    final canBuyCycles = state.cycles >= cost;
+    final shardCost = (cost / 4).ceil();
+    final canBuyShards = state.shards >= shardCost;
+    return div(
+      classes: installed
+          ? 'upgrade-item upgrade-item--installed'
+          : ((canBuyCycles || canBuyShards)
+              ? 'upgrade-item upgrade-item--available'
+              : 'upgrade-item upgrade-item--locked'),
+      [
+        div(classes: 'upgrade-top', [
+          span(classes: 'upgrade-name', [.text(id)]),
+          span(classes: 'upgrade-status', [
+            .text(installed ? '[ INSTALLED ]' : '[ $cost cycles or $shardCost shards ]'),
+          ]),
+        ]),
+        div(classes: 'upgrade-desc', [
+          TranslatedText.dynamic(fallback: description),
+        ]),
+        if (!installed && (canBuyCycles || canBuyShards))
+          TermButton(
+            label: 'FABRICATE',
+            translationKey: 'btn_fabricate',
+            onPressed: () => actions.buyModule(id),
+            enabled: true,
+            variant: TermButtonVariant.success,
+          ),
+      ],
+    );
+  }
+
   Component _statRow(String key, String val) {
     return div(classes: 'stat-row', [
-      span(classes: 'stat-key', [.text('$key:')]),
-      span(classes: 'stat-val', [.text(val)]),
+      span(classes: 'stat-key', [
+        TranslatedText.dynamic(fallback: '$key:'),
+      ]),
+      span(classes: 'stat-val', [
+        TranslatedText.dynamic(fallback: val),
+      ]),
     ]);
   }
 
@@ -142,9 +237,13 @@ class TabSystem extends StatelessComponent {
       [
         div(classes: 'upgrade-top', [
           span(classes: 'upgrade-name', [.text(upgrade.name)]),
-          span(classes: 'upgrade-status', [.text(statusText)]),
+          span(classes: 'upgrade-status', [
+            TranslatedText.dynamic(fallback: statusText),
+          ]),
         ]),
-        div(classes: 'upgrade-desc', [.text(upgrade.description)]),
+        div(classes: 'upgrade-desc', [
+          TranslatedText.dynamic(fallback: upgrade.description),
+        ]),
         if (!isPurchased)
           div(classes: 'upgrade-cost-row', [
             AsciiBar(
@@ -157,6 +256,7 @@ class TabSystem extends StatelessComponent {
             if (canBuy)
               TermButton(
                 label: 'INSTALL',
+                translationKey: 'btn_install',
                 onPressed: () => actions.purchaseUpgrade(upgrade.id),
                 enabled: true,
                 variant: TermButtonVariant.success,
@@ -197,19 +297,19 @@ class TabSystem extends StatelessComponent {
           css('.system-map-art').styles(
             color: const Color('#00ff41'),
             fontFamily: const FontFamily('Space Mono'),
-            fontSize: 13.px,
-            raw: {'line-height': '1.3', 'text-shadow': '0 0 6px rgba(0,255,65,0.3)'},
+            fontSize: 14.px,
+            raw: {'line-height': '1.3', 'text-shadow': '0 0 4px rgba(0,255,65,0.22)'},
           ),
           css('.system-map-art .interactive-ascii-pre').styles(
             color: const Color('#00ff41'),
             fontFamily: const FontFamily('Space Mono'),
-            fontSize: 13.px,
-            raw: {'line-height': '1.2', 'text-shadow': '0 0 6px rgba(0,255,65,0.3)'},
+            fontSize: 14.px,
+            raw: {'line-height': '1.2', 'text-shadow': '0 0 4px rgba(0,255,65,0.2)'},
           ),
           css('.map-legend').styles(
             margin: .only(top: 12.px),
-            color: const Color('#006614'),
-            fontSize: 12.px,
+            color: const Color('#00aa28'),
+            fontSize: 13.px,
             raw: {'line-height': '1.8'},
           ),
           css('.system-stats').styles(
@@ -267,8 +367,8 @@ class TabSystem extends StatelessComponent {
             raw: {'font-weight': 'bold'},
           ),
           css('.upgrade-status').styles(
-            color: const Color('#006614'),
-            fontSize: 13.px,
+            color: const Color('#00aa28'),
+            fontSize: 14.px,
           ),
           css('.upgrade-desc').styles(
             margin: .only(bottom: 8.px),

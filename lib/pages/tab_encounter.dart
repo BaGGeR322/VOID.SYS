@@ -9,6 +9,7 @@ import '../game/ascii.dart';
 import '../game/data.dart';
 import '../game/engine.dart';
 import '../game/models.dart';
+import '../services/translation_service.dart';
 
 class TabEncounter extends StatelessComponent {
   const TabEncounter({
@@ -30,9 +31,17 @@ class TabEncounter extends StatelessComponent {
 
   Component _buildDaemonList() {
     return div(classes: 'tab-encounter', [
-      div(classes: 'enc-header', [.text('DAEMON INTERFACE')]),
+      div(classes: 'enc-header', [
+        TranslatedText(
+          translationKey: 'enc_header',
+          fallback: 'DAEMON INTERFACE',
+        ),
+      ]),
       div(classes: 'enc-subtitle', [
-        .text('Corrupted memory fragments. They do not know they were human once.'),
+        TranslatedText(
+          translationKey: 'enc_subtitle',
+          fallback: 'Corrupted memory fragments. They do not know they were human once.',
+        ),
       ]),
       div(classes: 'daemon-list', [
         for (final enc in GameData.encounters) _buildDaemonEntry(enc),
@@ -43,6 +52,7 @@ class TabEncounter extends StatelessComponent {
   Component _buildDaemonEntry(Encounter enc) {
     final isDefeated = state.defeatedEncounters.contains(enc.id);
     final isAvailable = GameEngine.isEncounterAvailable(state, enc.id);
+    final rank = state.bossRanks[enc.id] ?? 0;
     String lockReason = '';
     if (!isDefeated && !isAvailable) {
       if (enc.requiredUpgrade != null && !state.purchasedUpgrades.contains(enc.requiredUpgrade!)) {
@@ -62,7 +72,11 @@ class TabEncounter extends StatelessComponent {
       [
         div(classes: 'daemon-name-row', [
           span(classes: 'daemon-name', [.text(enc.name)]),
-          span(classes: 'daemon-subtitle', [.text('  //  ${enc.subtitle}')]),
+          span(classes: 'daemon-subtitle', [
+            TranslatedText.dynamic(
+              fallback: '  //  ${enc.subtitle}  [RANK $rank]',
+            ),
+          ]),
         ]),
         pre(classes: 'daemon-portrait-sm', [
           .text(_portraitFor(enc.asciiKey)),
@@ -75,21 +89,31 @@ class TabEncounter extends StatelessComponent {
           ),
         ]),
         div(classes: 'daemon-info-row', [
-          span(classes: 'daemon-hp', [.text('HP: ${enc.maxHP}')]),
+          span(classes: 'daemon-hp', [
+            TranslatedText.dynamic(fallback: 'HP: ${enc.maxHP}'),
+          ]),
           span(classes: 'daemon-reward', [
-            .text('reward: ${enc.cyclesReward.toStringAsFixed(0)} cycles'),
+            TranslatedText.dynamic(
+              fallback: 'reward: ${enc.cyclesReward.toStringAsFixed(0)} cycles',
+            ),
           ]),
         ]),
-        if (isDefeated)
-          div(classes: 'daemon-silenced', [.text('[ SILENCED ]')])
-        else if (isAvailable)
+        if (isAvailable)
           TermButton(
-            label: 'INITIATE CONTACT',
+            label: isDefeated ? 'REINITIATE CONTACT' : 'INITIATE CONTACT',
+            translationKey: isDefeated ? 'btn_reinitiate_contact' : 'btn_initiate_contact',
             onPressed: () => actions.startEncounter(enc.id),
             variant: TermButtonVariant.danger,
           )
         else
-          div(classes: 'daemon-locked', [.text('[ LOCKED — $lockReason ]')]),
+          div(classes: 'daemon-locked', [
+            TranslatedText(
+              translationKey: 'enc_locked_reason',
+              fallback: '[ LOCKED — {reason} ]',
+              params: {'reason': lockReason},
+              tooltipParams: {'reason': translateDynamic(lockReason)},
+            ),
+          ]),
       ],
     );
   }
@@ -103,8 +127,13 @@ class TabEncounter extends StatelessComponent {
 
     return div(classes: 'combat-screen', [
       div(classes: 'combat-header', [
-        span(classes: 'combat-title', [.text('// DAEMON CONTACT: ${enc.name} //')]),
-        if (state.encounterPhase == 2) span(classes: 'phase-indicator', [.text('  [ PHASE 2 ]')]),
+        span(classes: 'combat-title', [
+          TranslatedText.dynamic(fallback: '// DAEMON CONTACT: ${enc.name} //'),
+        ]),
+        if (state.encounterPhase == 2)
+          span(classes: 'phase-indicator', [
+            TranslatedText.dynamic(fallback: '  [ PHASE 2 ]'),
+          ]),
       ]),
       div(classes: 'combat-arena', [
         div(classes: 'combat-daemon-side', [
@@ -114,18 +143,20 @@ class TabEncounter extends StatelessComponent {
               actions: [
                 AsciiAction(
                   region: const AsciiRegion(col1: 4, row1: 2, col2: 27, row2: 4),
-                  onTap: () => actions.executeMove('STRIKE', precision: true),
+                  onTap: () => actions.executeMove('VOID_SLASH', precision: true),
                   hoverHint: 'PRECISION STRIKE: 2x damage, 1.5x cost, 35% miss chance',
                 ),
                 AsciiAction(
                   region: const AsciiRegion(col1: 4, row1: 5, col2: 27, row2: 7),
-                  onTap: () => actions.executeMove('STRIKE'),
+                  onTap: () => actions.executeMove('PULSE'),
                   hoverHint: 'STRIKE: standard attack',
                 ),
               ],
             ),
           ]),
-          div(classes: 'daemon-hp-label', [.text('${enc.name} HP')]),
+          div(classes: 'daemon-hp-label', [
+            TranslatedText.dynamic(fallback: '${enc.name} HP'),
+          ]),
           AsciiBar(
             current: state.encounterEnemyHP?.toDouble() ?? 0,
             max: enc.maxHP.toDouble(),
@@ -133,12 +164,26 @@ class TabEncounter extends StatelessComponent {
             showNumbers: true,
           ),
           div(classes: 'portrait-hint', [
-            .text('[ hover portrait to target | HEAD=precision / BODY=standard ]'),
+            TranslatedText(
+              translationKey: 'enc_portrait_hint',
+              fallback: '[ hover portrait to target | HEAD=precision / BODY=standard ]',
+            ),
           ]),
-          if (state.enemyStunned) div(classes: 'stun-indicator', [.text('[ STUNNED ]')]),
+          if (state.enemyStunned)
+            div(classes: 'stun-indicator', [
+              TranslatedText(
+                translationKey: 'enc_stunned',
+                fallback: '[ STUNNED ]',
+              ),
+            ]),
         ]),
         div(classes: 'combat-player-side', [
-          div(classes: 'player-label', [.text('VOID-CORE')]),
+          div(classes: 'player-label', [
+            TranslatedText(
+              translationKey: 'enc_player_label',
+              fallback: 'VOID-CORE',
+            ),
+          ]),
           AsciiBar(
             current: state.playerHP.toDouble(),
             max: state.maxPlayerHP.toDouble(),
@@ -147,23 +192,57 @@ class TabEncounter extends StatelessComponent {
             showNumbers: true,
           ),
           div(classes: 'cycles-in-combat', [
-            .text('cycles: ${state.cycles.toStringAsFixed(0)}'),
+            TranslatedText.dynamic(
+              fallback: 'cycles: ${state.cycles.toStringAsFixed(0)}',
+            ),
           ]),
           div(classes: 'combat-moves', [
-            div(classes: 'moves-label', [.text('SELECT ATTACK:')]),
+            div(classes: 'moves-label', [
+              TranslatedText(
+                translationKey: 'enc_select_attack',
+                fallback: 'SELECT ATTACK:',
+              ),
+            ]),
             for (final move in GameData.playerMoves) _buildMoveButton(move),
+          ]),
+          div(classes: 'moves-label', [
+            TranslatedText(
+              translationKey: 'enc_consumables',
+              fallback: 'CONSUMABLES:',
+            ),
+          ]),
+          div(classes: 'combat-moves', [
+            for (final item in state.consumables.entries)
+              if (item.value > 0)
+                TermButton(
+                  label: '${item.key} x${item.value}',
+                  translationKey: 'consumable_${item.key.toLowerCase()}',
+                  translationParams: {'count': '${item.value}'},
+                  onPressed: () => actions.useConsumable(item.key),
+                  enabled: true,
+                  variant: TermButtonVariant.success,
+                ),
           ]),
           TermButton(
             label: 'RETREAT',
+            translationKey: 'btn_retreat',
             onPressed: actions.abandonEncounter,
             variant: TermButtonVariant.danger,
           ),
         ]),
       ]),
       div(classes: 'combat-log', [
-        div(classes: 'combat-log-label', [.text('COMBAT LOG')]),
+        div(classes: 'combat-log-label', [
+          TranslatedText(
+            translationKey: 'enc_combat_log',
+            fallback: 'COMBAT LOG',
+          ),
+        ]),
         div(classes: 'combat-log-entries', [
-          for (final entry in lastLog) div(classes: 'combat-log-entry', [.text(entry)]),
+          for (final entry in lastLog)
+            div(classes: 'combat-log-entry', [
+              TranslatedText.dynamic(fallback: entry),
+            ]),
         ]),
       ]),
     ]);
@@ -174,12 +253,16 @@ class TabEncounter extends StatelessComponent {
     return div(classes: 'move-entry', [
       TermButton(
         label: '${move.name} [${move.cycleCost.toStringAsFixed(0)}c]',
+        translationKey: 'move_${move.id.toLowerCase()}',
+        translationParams: {'cost': move.cycleCost.toStringAsFixed(0)},
         onPressed: () => actions.executeMove(move.id),
         enabled: canAfford,
         variant: TermButtonVariant.normal,
       ),
       div(classes: 'move-desc', [
-        .text('  dmg:${move.damage} ${move.stuns ? '| stuns' : ''}  — ${move.description}'),
+        TranslatedText.dynamic(
+          fallback: '  dmg:${move.damage} ${move.stuns ? '| stuns' : ''}  — ${move.description}',
+        ),
       ]),
     ]);
   }
@@ -309,8 +392,8 @@ class TabEncounter extends StatelessComponent {
         ),
       ]),
       css('.portrait-hint').styles(
-        color: const Color('#552233'),
-        fontSize: 11.px,
+        color: const Color('#aa4466'),
+        fontSize: 13.px,
         raw: {'margin-bottom': '6px', 'font-style': 'italic', 'line-height': '1.4'},
       ),
       css('.daemon-hp-label').styles(
@@ -340,15 +423,15 @@ class TabEncounter extends StatelessComponent {
         margin: .symmetric(vertical: 8.px),
       ),
       css('.moves-label').styles(
-        color: const Color('#006614'),
-        fontSize: 13.px,
+        color: const Color('#00aa28'),
+        fontSize: 14.px,
         raw: {'letter-spacing': '2px', 'margin-bottom': '6px'},
       ),
       css('.move-entry').styles(margin: .only(bottom: 4.px)),
       css('.move-desc').styles(
         margin: .only(top: 2.px, left: 8.px),
-        color: const Color('#334433'),
-        fontSize: 12.px,
+        color: const Color('#00aa28'),
+        fontSize: 13.px,
       ),
       css('.combat-log', [
         css('&').styles(
@@ -364,8 +447,8 @@ class TabEncounter extends StatelessComponent {
           raw: {'max-height': '180px', 'overflow-y': 'auto'},
         ),
         css('.combat-log-entry').styles(
-          color: const Color('#cc3355'),
-          fontSize: 13.px,
+          color: const Color('#ff6688'),
+          fontSize: 14.px,
           raw: {'line-height': '1.7'},
         ),
       ]),

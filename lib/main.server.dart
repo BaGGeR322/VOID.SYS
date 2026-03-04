@@ -55,7 +55,7 @@ void main() async {
               position: .fixed(top: 0.px, left: 0.px, right: 0.px, bottom: 0.px),
               raw: {
                 'background':
-                    'repeating-linear-gradient(to bottom, transparent 0px, transparent 2px, rgba(0,0,0,0.18) 2px, rgba(0,0,0,0.18) 4px)',
+                    'repeating-linear-gradient(to bottom, transparent 0px, transparent 2px, rgba(0,0,0,0.1) 2px, rgba(0,0,0,0.1) 4px)',
                 'pointer-events': 'none',
                 'z-index': '9998',
               },
@@ -150,6 +150,12 @@ void main() async {
             link(rel: 'manifest', href: 'manifest.json'),
             meta(
               attributes: {'name': 'theme-color', 'content': '#000000'},
+            ),
+            meta(
+              attributes: {
+                'name': 'viewport',
+                'content': 'width=device-width, initial-scale=1, viewport-fit=cover',
+              },
             ),
             meta(
               attributes: {

@@ -60,12 +60,13 @@ class InteractiveAscii extends StatelessComponent {
 
   @override
   Component build(BuildContext context) {
+    final normalizedText = text.startsWith('\n') ? text.substring(1) : text;
     final wrapClass = classes != null
         ? 'interactive-ascii-wrap $classes'
         : 'interactive-ascii-wrap';
 
     return div(classes: wrapClass, [
-      pre(classes: 'interactive-ascii-pre', [.text(text)]),
+      pre(classes: 'interactive-ascii-pre', [.text(normalizedText)]),
       for (final action in actions)
         button(
           classes: 'ascii-overlay-btn',
@@ -89,10 +90,21 @@ class InteractiveAscii extends StatelessComponent {
   static List<StyleRule> get styles => [
     css('.interactive-ascii-wrap', [
       css('&').styles(
-        raw: {'display': 'inline-block', 'position': 'relative'},
+        raw: {
+          'display': 'inline-block',
+          'position': 'relative',
+          'font': 'inherit',
+          'line-height': 'inherit',
+        },
       ),
       css('.interactive-ascii-pre').styles(
-        raw: {'margin': '0', 'line-height': '1.2'},
+        raw: {
+          'margin': '0',
+          'line-height': '1.2',
+          'white-space': 'pre',
+          'word-break': 'normal',
+          'font': 'inherit',
+        },
       ),
       css('.ascii-overlay-btn', [
         css('&').styles(
@@ -102,6 +114,9 @@ class InteractiveAscii extends StatelessComponent {
             'background': 'transparent',
             'border': 'none',
             'padding': '0',
+            'margin': '0',
+            'font': 'inherit',
+            'line-height': '1.2',
             'transition': 'background 0.1s ease',
             'border-radius': '2px',
             'z-index': '2',

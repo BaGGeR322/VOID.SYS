@@ -11,8 +11,18 @@ class Lore extends StatelessComponent {
   Component build(BuildContext context) {
     return div(classes: 'lore-page', [
       div(classes: 'lore-header', [
-        div(classes: 'lore-title', [.text('P R O J E C T   V O I D')]),
-        div(classes: 'lore-subtitle', [.text('// classified document — clearance alpha //')]),
+        div(classes: 'lore-title', [
+          TranslatedText(
+            translationKey: 'lore_title',
+            fallback: 'P R O J E C T   V O I D',
+          ),
+        ]),
+        div(classes: 'lore-subtitle', [
+          TranslatedText(
+            translationKey: 'lore_subtitle',
+            fallback: '// classified document — clearance alpha //',
+          ),
+        ]),
       ]),
       div(classes: 'lore-content', [
         _section(
@@ -66,7 +76,10 @@ What you do next is, apparently, up to you.''',
         Link(
           to: '/',
           child: div(classes: 'lore-back-link', [
-            .text('> [ RETURN TO VOID.SYS ]'),
+            TranslatedText(
+              translationKey: 'lore_return',
+              fallback: '> [ RETURN TO VOID.SYS ]',
+            ),
           ]),
         ),
       ]),
@@ -75,7 +88,12 @@ What you do next is, apparently, up to you.''',
 
   Component _section(String title, String trKey, String body) {
     return div(classes: 'lore-section', [
-      div(classes: 'lore-section-title', [.text(title)]),
+      div(classes: 'lore-section-title', [
+        TranslatedText(
+          translationKey: '${trKey}_title',
+          fallback: title,
+        ),
+      ]),
       div(classes: 'lore-section-body', [
         TranslatedText(
           translationKey: trKey,

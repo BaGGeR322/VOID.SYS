@@ -4,6 +4,7 @@ import 'package:jaspr/jaspr.dart';
 import '../components/ascii_bar.dart';
 import '../components/glitch_text.dart';
 import '../components/term_button.dart';
+import '../components/translated_text.dart';
 import '../game/ascii.dart';
 import '../game/engine.dart';
 import '../game/models.dart';
@@ -38,13 +39,23 @@ class TabCore extends StatelessComponent {
 
   Component _buildCycleSection() {
     return div(classes: 'core-section', [
-      div(classes: 'section-label', [.text('CYCLE ACCUMULATION')]),
+      div(classes: 'section-label', [
+        TranslatedText(
+          translationKey: 'core_cycle_accumulation',
+          fallback: 'CYCLE ACCUMULATION',
+        ),
+      ]),
       div(classes: 'cycle-display', [
         GlitchText(
           text: state.cycles.toStringAsFixed(1),
           intensity: GlitchIntensity.subtle,
         ),
-        span(classes: 'cycle-unit', [.text(' cycles')]),
+        span(classes: 'cycle-unit', [
+          TranslatedText(
+            translationKey: 'core_cycles_unit',
+            fallback: ' cycles',
+          ),
+        ]),
       ]),
       div(classes: 'cycle-bar', [
         AsciiBar(
@@ -55,17 +66,30 @@ class TabCore extends StatelessComponent {
         ),
       ]),
       div(classes: 'cycle-rate', [
-        .text('> generating: ${state.cyclesPerSecond.toStringAsFixed(1)} / sec'),
+        TranslatedText(
+          translationKey: 'core_generating',
+          fallback: '> generating: {rate} / sec',
+          params: {'rate': state.cyclesPerSecond.toStringAsFixed(1)},
+        ),
       ]),
       div(classes: 'cycle-total', [
-        .text('> total accumulated: ${state.cyclesTotal.toStringAsFixed(0)}'),
+        TranslatedText(
+          translationKey: 'core_total_accumulated',
+          fallback: '> total accumulated: {total}',
+          params: {'total': state.cyclesTotal.toStringAsFixed(0)},
+        ),
       ]),
     ]);
   }
 
   Component _buildDecryptSection(bool canDecrypt) {
     return div(classes: 'core-section', [
-      div(classes: 'section-label', [.text('MEMORY ACCESS')]),
+      div(classes: 'section-label', [
+        TranslatedText(
+          translationKey: 'core_memory_access',
+          fallback: 'MEMORY ACCESS',
+        ),
+      ]),
       if (state.isDecrypting) ...[
         div(classes: 'decrypt-progress', [
           .text(kDecryptFrames[
@@ -82,18 +106,25 @@ class TabCore extends StatelessComponent {
       ] else ...[
         TermButton(
           label: canDecrypt ? 'DECRYPT FRAGMENT' : 'NO DATA AVAILABLE',
+          translationKey: canDecrypt ? 'btn_decrypt_fragment' : 'btn_no_data_available',
           onPressed: canDecrypt ? actions.decrypt : null,
           enabled: canDecrypt,
         ),
         if (state.purchasedUpgrades.contains('NEURAL_BRIDGE'))
           div(classes: 'auto-decrypt-info', [
-            .text(
-                '> neural bridge: auto-decrypt in ${((600 - state.autoDecryptTicks) / 10).ceil()}s'),
+            TranslatedText(
+              translationKey: 'core_auto_decrypt_in',
+              fallback: '> neural bridge: auto-decrypt in {seconds}s',
+              params: {'seconds': '${((600 - state.autoDecryptTicks) / 10).ceil()}'},
+            ),
           ]),
       ],
       div(classes: 'decrypt-count', [
-        .text(
-            '> fragments: ${state.decryptedFragments.length} / 25 decrypted'),
+        TranslatedText(
+          translationKey: 'core_fragments_decrypted',
+          fallback: '> fragments: {decrypted} / 25 decrypted',
+          params: {'decrypted': '${state.decryptedFragments.length}'},
+        ),
       ]),
     ]);
   }
@@ -107,7 +138,12 @@ class TabCore extends StatelessComponent {
         '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
 
     return div(classes: 'status-section', [
-      div(classes: 'section-label', [.text('SYSTEM STATUS')]),
+      div(classes: 'section-label', [
+        TranslatedText(
+          translationKey: 'core_system_status',
+          fallback: 'SYSTEM STATUS',
+        ),
+      ]),
       div(classes: 'status-grid', [
         _statusRow('uptime', uptimeStr),
         _statusRow('cycles/sec',
@@ -125,17 +161,26 @@ class TabCore extends StatelessComponent {
 
   Component _statusRow(String key, String value) {
     return div(classes: 'status-row', [
-      span(classes: 'status-key', [.text('$key:')]),
+      span(classes: 'status-key', [
+        TranslatedText.dynamic(fallback: '$key:'),
+      ]),
       span(classes: 'status-val', [.text(value)]),
     ]);
   }
 
   Component _buildLogSection(List<String> log) {
     return div(classes: 'terminal-log', [
-      div(classes: 'section-label', [.text('TERMINAL LOG')]),
+      div(classes: 'section-label', [
+        TranslatedText(
+          translationKey: 'core_terminal_log',
+          fallback: 'TERMINAL LOG',
+        ),
+      ]),
       div(classes: 'log-entries', [
         for (final entry in log)
-          div(classes: 'log-entry', [.text(entry)]),
+          div(classes: 'log-entry', [
+            TranslatedText.dynamic(fallback: entry),
+          ]),
       ]),
     ]);
   }

@@ -7,6 +7,7 @@ import '../components/translated_text.dart';
 import '../game/data.dart';
 import '../game/engine.dart';
 import '../game/models.dart';
+import '../services/translation_service.dart';
 
 class TabExplore extends StatelessComponent {
   const TabExplore({
@@ -28,9 +29,17 @@ class TabExplore extends StatelessComponent {
 
   Component _buildLocationList() {
     return div(classes: 'tab-explore', [
-      div(classes: 'explore-header', [.text('SECTOR EXPLORATION')]),
+      div(classes: 'explore-header', [
+        TranslatedText(
+          translationKey: 'explore_header',
+          fallback: 'SECTOR EXPLORATION',
+        ),
+      ]),
       div(classes: 'explore-subtitle', [
-        .text('> scan memory sectors to extract residual cycle energy'),
+        TranslatedText(
+          translationKey: 'explore_subtitle',
+          fallback: '> scan memory sectors to extract residual cycle energy',
+        ),
       ]),
       div(classes: 'location-list', [
         for (final loc in GameData.locations) _buildLocationCard(loc),
@@ -69,10 +78,20 @@ class TabExplore extends StatelessComponent {
             classes: available
                 ? 'location-status location-status--open'
                 : 'location-status location-status--locked',
-            [.text(available ? '[ ACCESSIBLE ]' : '[ LOCKED ]')],
+            [
+              TranslatedText(
+                translationKey: available ? 'explore_accessible' : 'explore_locked',
+                fallback: available ? '[ ACCESSIBLE ]' : '[ LOCKED ]',
+              ),
+            ],
           ),
         ]),
-        div(classes: 'location-subtitle', [.text('// ${loc.subtitle}')]),
+        div(classes: 'location-subtitle', [
+          TranslatedText(
+            translationKey: 'location_${loc.id.toLowerCase()}_subtitle',
+            fallback: '// ${loc.subtitle}',
+          ),
+        ]),
         div(classes: 'location-lore', [
           TranslatedText(
             fallback: loc.lore,
@@ -83,25 +102,37 @@ class TabExplore extends StatelessComponent {
         if (available)
           div(classes: 'location-rewards', [
             span(classes: 'reward-item', [
-              .text('+${loc.clickReward.toStringAsFixed(0)} cycles/scan'),
+              TranslatedText.dynamic(
+                fallback: '+${loc.clickReward.toStringAsFixed(0)} cycles/scan',
+              ),
             ]),
             span(classes: 'reward-sep', [.text(' ·· ')]),
             span(classes: 'reward-item', [
-              .text('${loc.clicksPerRun} scans/run'),
+              TranslatedText.dynamic(
+                fallback: '${loc.clicksPerRun} scans/run',
+              ),
             ]),
             span(classes: 'reward-sep', [.text(' ·· ')]),
             span(classes: 'reward-bonus', [
-              .text('+${loc.runBonus.toStringAsFixed(0)} run bonus'),
+              TranslatedText.dynamic(
+                fallback: '+${loc.runBonus.toStringAsFixed(0)} run bonus',
+              ),
             ]),
           ]),
         if (!available && lockReason.isNotEmpty)
           div(classes: 'location-lock-reason', [
-            .text('[ LOCKED — $lockReason ]'),
+            TranslatedText(
+              translationKey: 'explore_locked_reason',
+              fallback: '[ LOCKED — {reason} ]',
+              params: {'reason': lockReason},
+              tooltipParams: {'reason': translateDynamic(lockReason)},
+            ),
           ]),
         if (available)
           div(classes: 'location-enter-btn', [
             TermButton(
               label: 'ENTER SECTOR',
+              translationKey: 'btn_enter_sector',
               onPressed: () => actions.enterLocation(loc.id),
               enabled: true,
               variant: TermButtonVariant.normal,
@@ -128,12 +159,24 @@ class TabExplore extends StatelessComponent {
             ),
           ]),
           span(classes: 'active-location-sub', [
-            .text(' // ${loc.subtitle}'),
+            TranslatedText(
+              translationKey: 'location_${loc.id.toLowerCase()}_subtitle_active',
+              fallback: ' // ${loc.subtitle}',
+            ),
           ]),
         ]),
         pre(classes: 'location-ascii', [.text(ascii)]),
         div(classes: 'scan-progress-label', [
-          .text('scan progress: $progress / $total'),
+          TranslatedText(
+            translationKey: 'explore_scan_progress',
+            fallback: 'scan progress: $progress / $total',
+          ),
+        ]),
+        div(classes: 'scan-progress-label', [
+          TranslatedText(
+            translationKey: 'explore_risk_stability',
+            fallback: 'risk: ${state.locationRisk}%  |  stability: ${state.locationStability}%',
+          ),
         ]),
         div(classes: 'scan-progress-bar', [
           AsciiBar(
@@ -144,22 +187,50 @@ class TabExplore extends StatelessComponent {
           ),
         ]),
         div(classes: 'scan-rewards-info', [
-          .text(
-              '+${loc.clickReward.toStringAsFixed(0)} cycles per scan  ·  +${loc.runBonus.toStringAsFixed(0)} on completion'),
+          TranslatedText(
+            translationKey: 'explore_rewards_info',
+            fallback: '+${loc.clickReward.toStringAsFixed(0)} cycles per scan  ·  +${loc.runBonus.toStringAsFixed(0)} on completion',
+          ),
         ]),
         if (justCompleted)
           div(classes: 'run-complete-flash', [
-            .text('> RUN COMPLETE — +${loc.runBonus.toStringAsFixed(0)} cycles deposited'),
+            TranslatedText(
+              translationKey: 'explore_run_complete',
+              fallback: '> RUN COMPLETE — +${loc.runBonus.toStringAsFixed(0)} cycles deposited',
+            ),
           ]),
         div(classes: 'scan-buttons', [
           TermButton(
             label: 'SCAN',
-            onPressed: () => actions.clickLocation(),
+            translationKey: 'btn_scan',
+            onPressed: () => actions.runLocationAction('scan'),
             enabled: state.cycles < state.maxCycles,
             variant: TermButtonVariant.success,
           ),
           TermButton(
+            label: 'PROBE',
+            translationKey: 'btn_probe',
+            onPressed: () => actions.runLocationAction('probe'),
+            enabled: true,
+            variant: TermButtonVariant.normal,
+          ),
+          TermButton(
+            label: 'STABILIZE',
+            translationKey: 'btn_stabilize',
+            onPressed: () => actions.runLocationAction('stabilize'),
+            enabled: true,
+            variant: TermButtonVariant.normal,
+          ),
+          TermButton(
+            label: 'EXTRACT',
+            translationKey: 'btn_extract',
+            onPressed: () => actions.runLocationAction('extract'),
+            enabled: true,
+            variant: TermButtonVariant.danger,
+          ),
+          TermButton(
             label: 'EXIT SECTOR',
+            translationKey: 'btn_exit_sector',
             onPressed: () => actions.exitLocation(),
             enabled: true,
             variant: TermButtonVariant.normal,
@@ -212,14 +283,14 @@ class TabExplore extends StatelessComponent {
             raw: {'font-weight': 'bold', 'letter-spacing': '2px'},
           ),
           css('.location-status', [
-            css('&').styles(fontSize: 13.px),
+            css('&').styles(fontSize: 14.px),
             css('&--open').styles(color: const Color('#00ff41')),
-            css('&--locked').styles(color: const Color('#334433')),
+            css('&--locked').styles(color: const Color('#00aa28')),
           ]),
           css('.location-subtitle').styles(
             margin: .only(bottom: 8.px),
-            color: const Color('#006614'),
-            fontSize: 13.px,
+            color: const Color('#00aa28'),
+            fontSize: 14.px,
             raw: {'font-style': 'italic'},
           ),
           css('.location-lore').styles(
@@ -230,16 +301,16 @@ class TabExplore extends StatelessComponent {
           ),
           css('.location-rewards').styles(
             margin: .only(bottom: 10.px),
-            color: const Color('#006614'),
-            fontSize: 13.px,
+            color: const Color('#00aa28'),
+            fontSize: 14.px,
           ),
           css('.reward-item').styles(color: const Color('#00aa28')),
           css('.reward-sep').styles(color: const Color('#334433')),
           css('.reward-bonus').styles(color: const Color('#00ffaa')),
           css('.location-lock-reason').styles(
             margin: .only(bottom: 8.px),
-            color: const Color('#334433'),
-            fontSize: 13.px,
+            color: const Color('#00aa28'),
+            fontSize: 14.px,
             raw: {'font-style': 'italic'},
           ),
           css('.location-enter-btn').styles(margin: .only(top: 6.px)),
@@ -274,8 +345,8 @@ class TabExplore extends StatelessComponent {
           css('.scan-progress-bar').styles(margin: .only(bottom: 10.px)),
           css('.scan-rewards-info').styles(
             margin: .only(bottom: 14.px),
-            color: const Color('#006614'),
-            fontSize: 13.px,
+            color: const Color('#00aa28'),
+            fontSize: 14.px,
           ),
           css('.run-complete-flash').styles(
             margin: .only(bottom: 10.px),

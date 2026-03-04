@@ -1,0 +1,14 @@
+{
+  "nav_core": "ЯДРО",
+  "nav_memory": "ПАМЯТЬ",
+  "nav_system": "СИСТЕМА",
+  "nav_explore": "СЕКТОРЫ",
+  "nav_daemon": "ДЕМОНЫ",
+  "nav_void": "ПУСТОТА",
+  "ui_settings": "НАСТРОЙКИ",
+  "ui_language": "ЯЗЫК",
+  "system_header": "СИСТЕМНАЯ ДИАГНОСТИКА",
+  "explore_header": "ИССЛЕДОВАНИЕ СЕКТОРОВ",
+  "enc_header": "ИНТЕРФЕЙС ДЕМОНОВ",
+  "memory_header": "АРХИВ ПАМЯТИ"
+}

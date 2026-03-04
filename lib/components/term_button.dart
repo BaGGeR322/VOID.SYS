@@ -1,10 +1,13 @@
 import 'package:jaspr/dom.dart';
 import 'package:jaspr/jaspr.dart';
+import 'translated_text.dart';
 
 class TermButton extends StatelessComponent {
   const TermButton({
     required this.label,
     required this.onPressed,
+    this.translationKey,
+    this.translationParams = const {},
     this.enabled = true,
     this.variant = TermButtonVariant.normal,
     super.key,
@@ -12,6 +15,8 @@ class TermButton extends StatelessComponent {
 
   final String label;
   final void Function()? onPressed;
+  final String? translationKey;
+  final Map<String, String> translationParams;
   final bool enabled;
   final TermButtonVariant variant;
 
@@ -28,7 +33,15 @@ class TermButton extends StatelessComponent {
       classes: cls,
       disabled: !enabled,
       onClick: enabled && onPressed != null ? onPressed! : null,
-      [.text('> [ $label ]')],
+      [
+        .text('> [ '),
+        TranslatedText(
+          translationKey: translationKey ?? label,
+          fallback: label,
+          params: translationParams,
+        ),
+        .text(' ]'),
+      ],
     );
   }
 

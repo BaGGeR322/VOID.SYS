@@ -4,6 +4,7 @@ import 'package:jaspr/dom.dart';
 import 'package:jaspr/jaspr.dart';
 
 import '../components/settings_panel.dart';
+import '../components/translated_text.dart';
 import '../game/engine.dart';
 import '../game/models.dart';
 import '../game/storage.dart';
@@ -33,7 +34,7 @@ class GameRoot extends StatefulComponent {
         position: .fixed(top: 0.px, left: 0.px, right: 0.px, bottom: 0.px),
         raw: {
           'background':
-              'repeating-linear-gradient(to bottom, transparent 0px, transparent 2px, rgba(0,0,0,0.25) 2px, rgba(0,0,0,0.25) 4px)',
+              'repeating-linear-gradient(to bottom, transparent 0px, transparent 2px, rgba(0,0,0,0.14) 2px, rgba(0,0,0,0.14) 4px)',
           'pointer-events': 'none',
           'z-index': '9999',
         },
@@ -143,8 +144,10 @@ class _GameRootState extends State<GameRoot> {
       markFragmentViewed: (id) => _update((s) => s.copyWith(viewedFragments: <int>{...s.viewedFragments, id})),
       abandonEncounter: () => _update(GameEngine.abandonEncounter),
       enterLocation: (id) => _update((s) => GameEngine.enterLocation(s, id)),
-      clickLocation: () => _update(GameEngine.clickLocation),
+      runLocationAction: (action) => _update((s) => GameEngine.runLocationAction(s, action)),
       exitLocation: () => _update(GameEngine.exitLocation),
+      useConsumable: (id) => _update((s) => GameEngine.useConsumable(s, id)),
+      buyModule: (id) => _update((s) => GameEngine.buyModule(s, id)),
     );
 
     if (kIsWeb) {
@@ -211,14 +214,31 @@ class _GameRootState extends State<GameRoot> {
 
     return div(classes: 'game-nav', [
       div(classes: 'nav-brand', [
-        span(classes: 'nav-brand-text', [.text('VOID.SYS')]),
-        span(classes: 'nav-brand-sub', [.text(' v0.0.1')]),
+        span(classes: 'nav-brand-text', [
+          TranslatedText(
+            translationKey: 'nav_brand',
+            fallback: 'VOID.SYS',
+          ),
+        ]),
+        span(classes: 'nav-brand-sub', [
+          TranslatedText(
+            translationKey: 'nav_version',
+            fallback: ' v0.0.1',
+          ),
+        ]),
       ]),
       div(classes: 'nav-tabs', [
         for (final (id, label) in tabs) _buildNavTab(id, label),
       ]),
       div(classes: 'nav-cycles', [
-        .text('⬡ ${_state.cycles.toStringAsFixed(0)} cycles'),
+        TranslatedText(
+          translationKey: 'nav_resources',
+          fallback: '⬡ {cycles}c | ◈ {shards}',
+          params: {
+            'cycles': _state.cycles.toStringAsFixed(0),
+            'shards': '${_state.shards}',
+          },
+        ),
       ]),
       const SettingsPanel(),
     ]);
@@ -233,7 +253,14 @@ class _GameRootState extends State<GameRoot> {
     return button(
       classes: isActive ? 'nav-tab nav-tab--active' : 'nav-tab',
       onClick: () => _actions.switchTab(id),
-      [.text('[ $label ]')],
+      [
+        .text('[ '),
+        TranslatedText(
+          translationKey: 'nav_${id.toLowerCase()}',
+          fallback: label,
+        ),
+        .text(' ]'),
+      ],
     );
   }
 

@@ -1,0 +1,8 @@
+{
+  "nav_core": "CORE",
+  "nav_memory": "MEMORY",
+  "nav_system": "SYSTEM",
+  "nav_explore": "EXPLORE",
+  "nav_daemon": "DAEMON",
+  "nav_void": "VOID"
+}

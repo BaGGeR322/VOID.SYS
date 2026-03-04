@@ -1,5 +1,6 @@
 import 'package:jaspr/dom.dart';
 import 'package:jaspr/jaspr.dart';
+import 'package:universal_web/web.dart' as web;
 
 import '../services/translation_service.dart';
 
@@ -7,13 +8,28 @@ class TranslatedText extends StatefulComponent {
   const TranslatedText({
     required this.translationKey,
     required this.fallback,
+    this.params = const {},
+    this.tooltipParams = const {},
     this.longForm = false,
+    this.useDynamicTranslation = false,
     super.key,
   });
 
+  const TranslatedText.dynamic({
+    required this.fallback,
+    this.params = const {},
+    this.tooltipParams = const {},
+    this.longForm = false,
+    super.key,
+  })  : translationKey = '',
+        useDynamicTranslation = true;
+
   final String translationKey;
   final String fallback;
+  final Map<String, String> params;
+  final Map<String, String> tooltipParams;
   final bool longForm;
+  final bool useDynamicTranslation;
 
   @override
   State<TranslatedText> createState() => _TranslatedTextState();
@@ -25,12 +41,12 @@ class TranslatedText extends StatefulComponent {
             raw: {'position': 'relative', 'display': 'inline'},
           ),
           css('.tr-tooltip').styles(
-            position: .absolute(top: Unit.auto, left: 0.px),
+            position: .fixed(top: 0.px, left: 0.px),
             raw: {
-              'bottom': '110%',
-              'z-index': '9000',
+              'z-index': '10050',
               'min-width': '220px',
-              'max-width': '400px',
+              'max-width':
+                  'min(360px, calc(100vw - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px) - 16px))',
               'background': '#000a00',
               'border': '1px solid #00ff41',
               'padding': '8px 12px',
@@ -45,14 +61,17 @@ class TranslatedText extends StatefulComponent {
               'opacity': '0',
               'visibility': 'hidden',
               'transition': 'opacity 0.15s',
+              'max-height':
+                  'min(220px, calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 16px))',
+              'overflow-y': 'auto',
             },
           ),
-          css('&:hover .tr-tooltip').styles(
+          css('&.tr-wrapper--show .tr-tooltip').styles(
             raw: {'opacity': '1', 'visibility': 'visible'},
           ),
           css('.tr-tooltip-label').styles(
             color: const Color('#006614'),
-            fontSize: 11.px,
+            fontSize: 12.px,
             raw: {
               'letter-spacing': '2px',
               'margin-bottom': '4px',
@@ -60,11 +79,11 @@ class TranslatedText extends StatefulComponent {
             },
           ),
           css('.tr-hint').styles(
-            color: const Color('#006614'),
-            fontSize: 11.px,
             raw: {
               'border-bottom': '1px dotted #006614',
               'cursor': 'help',
+              'font': 'inherit',
+              'line-height': 'inherit',
             },
           ),
         ]),
@@ -114,44 +133,116 @@ class TranslatedText extends StatefulComponent {
 }
 
 class _TranslatedTextState extends State<TranslatedText> {
-  bool _expanded = false;
   String? _translation;
+  String _language = 'en';
+  bool _showTooltip = false;
+  double _tooltipX = 12;
+  double _tooltipY = 12;
 
   @override
   void initState() {
     super.initState();
     if (kIsWeb) {
-      _translation = translate(component.translationKey);
+      _language = getActiveLanguage();
+      final tooltipValues = component.tooltipParams.isEmpty
+          ? component.params
+          : component.tooltipParams;
+      if (component.useDynamicTranslation) {
+        _translation = translateDynamicTooltip(
+          applyParams(component.fallback, tooltipValues),
+        );
+      } else {
+        _translation = translate(
+          component.translationKey,
+          params: tooltipValues,
+        );
+      }
     }
+  }
+
+  double _estimateWidth(String text) {
+    final longest = text.split('\n').fold<int>(
+          0,
+          (maxValue, line) => line.length > maxValue ? line.length : maxValue,
+        );
+    final estimated = longest * 7.4 + 44;
+    return estimated.clamp(220, 360).toDouble();
+  }
+
+  double _estimateHeight(String text) {
+    final hardLines = text.split('\n').length;
+    final softLines = (text.length / 38).ceil();
+    final lines = hardLines > softLines ? hardLines : softLines;
+    final estimated = lines * 18.0 + 42;
+    return estimated.clamp(70, 220).toDouble();
+  }
+
+  void _updateTooltipPosition(web.Event event, String text) {
+    final mouse = event is web.MouseEvent ? event : null;
+    if (mouse == null) return;
+    final width = _estimateWidth(text);
+    final height = _estimateHeight(text);
+    final viewportWidth = (web.document.documentElement?.clientWidth ?? 1280).toDouble();
+    final viewportHeight = (web.document.documentElement?.clientHeight ?? 720).toDouble();
+    final margin = 10.0;
+    var left = mouse.clientX.toDouble() + 16;
+    var top = mouse.clientY.toDouble() + 20;
+    if (left + width + margin > viewportWidth) {
+      left = mouse.clientX - width - 16;
+    }
+    if (left < margin) {
+      left = margin;
+    }
+    if (left + width + margin > viewportWidth) {
+      left = viewportWidth - width - margin;
+    }
+    if (top + height + margin > viewportHeight) {
+      top = mouse.clientY - height - 16;
+    }
+    if (top < margin) {
+      top = margin;
+    }
+    if (top + height + margin > viewportHeight) {
+      top = viewportHeight - height - margin;
+    }
+    setState(() {
+      _tooltipX = left;
+      _tooltipY = top;
+    });
   }
 
   @override
   Component build(BuildContext context) {
-    final t = _translation;
-
-    if (t == null || t.isEmpty) {
-      return span([.text(component.fallback)]);
+    if (_language == 'en') {
+      return span([.text(applyParams(component.fallback, component.params))]);
     }
-
-    if (component.longForm) {
-      return div(classes: 'tr-long-wrapper', [
-        span([.text(component.fallback)]),
-        button(
-          classes: 'tr-toggle-btn',
-          onClick: () => setState(() => _expanded = !_expanded),
-          [.text(_expanded ? '[ ▲ скрыть перевод ]' : '[ ▼ перевод ]')],
-        ),
-        if (_expanded)
-          div(classes: 'tr-translated-block', [
-            span(classes: 'tr-translated-label', [.text('// ПЕРЕВОД //')]),
-            span([.text(t)]),
-          ]),
-      ]);
-    }
-
-    return span(classes: 'tr-wrapper', [
-      span(classes: 'tr-hint', [.text(component.fallback)]),
-      div(classes: 'tr-tooltip', [
+    final fallbackText = applyParams(component.fallback, component.params);
+    final t = (_translation?.isNotEmpty == true ? _translation! : fallbackText).trim().isEmpty
+        ? fallbackText
+        : (_translation?.isNotEmpty == true ? _translation! : fallbackText);
+    final wrapperClass = component.longForm
+        ? (_showTooltip ? 'tr-wrapper tr-wrapper--show tr-long-wrapper' : 'tr-wrapper tr-long-wrapper')
+        : (_showTooltip ? 'tr-wrapper tr-wrapper--show' : 'tr-wrapper');
+    final tooltipStyles = Styles(raw: {
+      'left': '${_tooltipX}px',
+      'top': '${_tooltipY}px',
+    });
+    return span(classes: wrapperClass, [
+      span(
+        classes: 'tr-hint',
+        events: {
+          'mouseenter': (event) {
+            setState(() => _showTooltip = true);
+            _updateTooltipPosition(event, t);
+          },
+          'mousemove': (event) {
+            if (_showTooltip) _updateTooltipPosition(event, t);
+          },
+          'mouseleave': (_) => setState(() => _showTooltip = false),
+        },
+        [.text(fallbackText)],
+      ),
+      div(classes: 'tr-tooltip', styles: tooltipStyles, [
         span(classes: 'tr-tooltip-label', [.text('// TR //')]),
         span([.text(t)]),
       ]),

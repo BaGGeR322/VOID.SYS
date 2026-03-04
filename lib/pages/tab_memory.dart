@@ -5,6 +5,7 @@ import '../components/translated_text.dart';
 import '../components/typewriter.dart';
 import '../game/data.dart';
 import '../game/models.dart';
+import '../services/translation_service.dart';
 
 class TabMemory extends StatelessComponent {
   const TabMemory({
@@ -23,9 +24,21 @@ class TabMemory extends StatelessComponent {
 
     return div(classes: 'tab-memory', [
       div(classes: 'memory-header', [
-        div(classes: 'memory-title', [.text('MEMORY ARCHIVE')]),
+        div(classes: 'memory-title', [
+          TranslatedText(
+            translationKey: 'memory_header',
+            fallback: 'MEMORY ARCHIVE',
+          ),
+        ]),
         div(classes: 'memory-progress', [
-          .text('$decrypted / $total fragments recovered'),
+          TranslatedText(
+            translationKey: 'memory_progress',
+            fallback: '{decrypted} / {total} fragments recovered',
+            params: {
+              'decrypted': '$decrypted',
+              'total': '$total',
+            },
+          ),
         ]),
       ]),
       div(classes: 'memory-acts', [
@@ -50,10 +63,15 @@ class TabMemory extends StatelessComponent {
     return div(classes: 'memory-act', [
       div(classes: 'act-header', [
         span(classes: 'act-label', [
-          .text('ACT $act — ${actNames[act] ?? ''}'),
+          TranslatedText(
+            translationKey: 'memory_act_${act.toLowerCase()}',
+            fallback: 'ACT $act — ${actNames[act] ?? ''}',
+          ),
         ]),
         span(classes: 'act-count', [
-          .text('[ $actDecrypted / ${actFragments.length} ]'),
+          TranslatedText.dynamic(
+            fallback: '[ $actDecrypted / ${actFragments.length} ]',
+          ),
         ]),
       ]),
       div(classes: 'act-fragments', [
@@ -84,7 +102,12 @@ class TabMemory extends StatelessComponent {
         [
           div(classes: 'fragment-title', [.text(fragment.title)]),
           div(classes: 'fragment-locked-text', [
-            .text('[ ENCRYPTED — $lockReason ]'),
+            TranslatedText(
+              translationKey: 'memory_fragment_locked',
+              fallback: '[ ENCRYPTED — {reason} ]',
+              params: {'reason': lockReason},
+              tooltipParams: {'reason': translateDynamic(lockReason)},
+            ),
           ]),
         ],
       );
@@ -98,7 +121,10 @@ class TabMemory extends StatelessComponent {
           fallback: fragment.title,
         ),
         span(classes: 'fragment-act-label', [
-          .text('  //  ACT ${fragment.act}'),
+          TranslatedText(
+            translationKey: 'memory_fragment_act',
+            fallback: '  //  ACT ${fragment.act}',
+          ),
         ]),
       ]),
       div(classes: 'fragment-content', [
@@ -106,6 +132,7 @@ class TabMemory extends StatelessComponent {
           TypewriterText(
             key: ValueKey('fragment_${fragment.id}'),
             text: fragment.content,
+            translationKey: 'fragment_${fragment.id}_content',
             speed: 20,
             charsPerTick: 2,
             onComplete: () => actions.markFragmentViewed(fragment.id),

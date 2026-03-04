@@ -1,8 +1,15 @@
 import 'dart:convert';
 
 class GameState {
+  final int saveVersion;
   final double cycles;
   final double cyclesTotal;
+  final int shards;
+  final int playerLevel;
+  final int armor;
+  final Set<String> installedModules;
+  final Map<String, int> consumables;
+  final Map<int, int> bossRanks;
   final Set<String> purchasedUpgrades;
   final Set<int> decryptedFragments;
   final Set<int> defeatedEncounters;
@@ -24,10 +31,20 @@ class GameState {
   final Set<int> viewedFragments;
   final String? activeLocationId;
   final int locationProgress;
+  final int locationRisk;
+  final int locationStability;
+  final String locationMode;
 
   GameState({
+    this.saveVersion = 2,
     this.cycles = 0,
     this.cyclesTotal = 0,
+    this.shards = 0,
+    this.playerLevel = 1,
+    this.armor = 0,
+    Set<String>? installedModules,
+    Map<String, int>? consumables,
+    Map<int, int>? bossRanks,
     Set<String>? purchasedUpgrades,
     Set<int>? decryptedFragments,
     Set<int>? defeatedEncounters,
@@ -49,7 +66,20 @@ class GameState {
     Set<int>? viewedFragments,
     this.activeLocationId,
     this.locationProgress = 0,
+    this.locationRisk = 0,
+    this.locationStability = 100,
+    this.locationMode = 'scan',
   })  : purchasedUpgrades = purchasedUpgrades ?? <String>{},
+        installedModules = installedModules ?? <String>{},
+        consumables = consumables ??
+            <String, int>{
+              'med_patch': 1,
+              'overclock_cell': 1,
+              'shield_pulse': 0,
+              'focus_injector': 0,
+              'purge_script': 0,
+            },
+        bossRanks = bossRanks ?? <int, int>{},
         decryptedFragments = decryptedFragments ?? <int>{},
         defeatedEncounters = defeatedEncounters ?? <int>{},
         unlockedTabs = unlockedTabs ?? <String>{'core'},
@@ -64,27 +94,37 @@ class GameState {
         viewedFragments = viewedFragments ?? <int>{};
 
   double get cyclesPerSecond {
-    double base = 1.0;
+    double base = 1.0 + (playerLevel - 1) * 0.2;
     if (purchasedUpgrades.contains('CLOCK_BOOST_1')) base += 0.5;
     if (purchasedUpgrades.contains('CLOCK_BOOST_2')) base += 1.0;
     if (purchasedUpgrades.contains('CLOCK_BOOST_3')) base += 2.0;
     if (purchasedUpgrades.contains('VOID_RESONANCE')) base += 5.0;
     if (purchasedUpgrades.contains('RECURSIVE_LOOP')) base *= 1.5;
     if (purchasedUpgrades.contains('TIME_DILATION')) base *= 2.0;
+    if (installedModules.contains('THROUGHPUT_CORE')) base *= 1.2;
     return base;
   }
 
   int get maxCycles {
-    if (purchasedUpgrades.contains('QUANTUM_CACHE')) return 8000;
-    if (purchasedUpgrades.contains('MEMORY_DEFRAG')) return 2500;
+    if (purchasedUpgrades.contains('SINGULARITY')) return 200000;
+    if (purchasedUpgrades.contains('CONSCIOUSNESS_EXP')) return 50000;
+    if (purchasedUpgrades.contains('QUANTUM_CACHE')) return 12000;
+    if (purchasedUpgrades.contains('MEMORY_DEFRAG')) return 8000;
     return 500;
   }
 
   Duration get uptime => DateTime.now().difference(gameStarted);
 
   GameState copyWith({
+    int? saveVersion,
     double? cycles,
     double? cyclesTotal,
+    int? shards,
+    int? playerLevel,
+    int? armor,
+    Set<String>? installedModules,
+    Map<String, int>? consumables,
+    Map<int, int>? bossRanks,
     Set<String>? purchasedUpgrades,
     Set<int>? decryptedFragments,
     Set<int>? defeatedEncounters,
@@ -106,10 +146,20 @@ class GameState {
     Set<int>? viewedFragments,
     Object? activeLocationId = _unset,
     int? locationProgress,
+    int? locationRisk,
+    int? locationStability,
+    String? locationMode,
   }) =>
       GameState(
+        saveVersion: saveVersion ?? this.saveVersion,
         cycles: cycles ?? this.cycles,
         cyclesTotal: cyclesTotal ?? this.cyclesTotal,
+        shards: shards ?? this.shards,
+        playerLevel: playerLevel ?? this.playerLevel,
+        armor: armor ?? this.armor,
+        installedModules: installedModules ?? this.installedModules,
+        consumables: consumables ?? this.consumables,
+        bossRanks: bossRanks ?? this.bossRanks,
         purchasedUpgrades: purchasedUpgrades ?? this.purchasedUpgrades,
         decryptedFragments: decryptedFragments ?? this.decryptedFragments,
         defeatedEncounters: defeatedEncounters ?? this.defeatedEncounters,
@@ -139,11 +189,21 @@ class GameState {
             ? this.activeLocationId
             : activeLocationId as String?,
         locationProgress: locationProgress ?? this.locationProgress,
+        locationRisk: locationRisk ?? this.locationRisk,
+        locationStability: locationStability ?? this.locationStability,
+        locationMode: locationMode ?? this.locationMode,
       );
 
   Map<String, dynamic> toJson() => {
+        'saveVersion': saveVersion,
         'cycles': cycles,
         'cyclesTotal': cyclesTotal,
+        'shards': shards,
+        'playerLevel': playerLevel,
+        'armor': armor,
+        'installedModules': installedModules.toList(),
+        'consumables': consumables,
+        'bossRanks': bossRanks.map((k, v) => MapEntry(k.toString(), v)),
         'purchasedUpgrades': purchasedUpgrades.toList(),
         'decryptedFragments': decryptedFragments.toList(),
         'defeatedEncounters': defeatedEncounters.toList(),
@@ -156,11 +216,24 @@ class GameState {
         'viewedFragments': viewedFragments.toList(),
         'activeLocationId': activeLocationId,
         'locationProgress': locationProgress,
+        'locationRisk': locationRisk,
+        'locationStability': locationStability,
+        'locationMode': locationMode,
       };
 
   factory GameState.fromJson(Map<String, dynamic> json) => GameState(
+        saveVersion: json['saveVersion'] as int? ?? 1,
         cycles: (json['cycles'] as num? ?? 0).toDouble(),
         cyclesTotal: (json['cyclesTotal'] as num? ?? 0).toDouble(),
+        shards: json['shards'] as int? ?? 0,
+        playerLevel: json['playerLevel'] as int? ?? 1,
+        armor: json['armor'] as int? ?? 0,
+        installedModules:
+            Set<String>.from((json['installedModules'] as List?) ?? []),
+        consumables: Map<String, int>.from((json['consumables'] as Map?) ?? {}),
+        bossRanks: ((json['bossRanks'] as Map?) ?? {}).map(
+          (k, v) => MapEntry(int.tryParse(k.toString()) ?? 0, (v as num).toInt()),
+        ),
         purchasedUpgrades:
             Set<String>.from((json['purchasedUpgrades'] as List?) ?? []),
         decryptedFragments: Set<int>.from(
@@ -180,6 +253,9 @@ class GameState {
             ((json['viewedFragments'] as List?) ?? []).map((e) => e as int)),
         activeLocationId: json['activeLocationId'] as String?,
         locationProgress: json['locationProgress'] as int? ?? 0,
+        locationRisk: json['locationRisk'] as int? ?? 0,
+        locationStability: json['locationStability'] as int? ?? 100,
+        locationMode: json['locationMode'] as String? ?? 'scan',
       );
 
   String toJsonString() => jsonEncode(toJson());
@@ -307,8 +383,10 @@ class Actions {
   final void Function(int) markFragmentViewed;
   final void Function() abandonEncounter;
   final void Function(String) enterLocation;
-  final void Function() clickLocation;
+  final void Function(String) runLocationAction;
   final void Function() exitLocation;
+  final void Function(String) useConsumable;
+  final void Function(String) buyModule;
 
   const Actions({
     required this.decrypt,
@@ -321,8 +399,10 @@ class Actions {
     required this.markFragmentViewed,
     required this.abandonEncounter,
     required this.enterLocation,
-    required this.clickLocation,
+    required this.runLocationAction,
     required this.exitLocation,
+    required this.useConsumable,
+    required this.buyModule,
   });
 }
 

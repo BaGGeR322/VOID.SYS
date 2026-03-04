@@ -1,6 +1,6 @@
 name: test_server
 description: A new Jaspr project
-version: 0.1.0
+version: 0.1.1
 
 environment:
   sdk: ^3.10.0
