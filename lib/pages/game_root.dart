@@ -136,7 +136,8 @@ class _GameRootState extends State<GameRoot> {
       switchTab: (tab) => _update((s) => s.copyWith(activeTab: tab)),
       purchaseUpgrade: (id) => _update((s) => GameEngine.purchaseUpgrade(s, id)),
       startEncounter: (id) => _update((s) => GameEngine.startEncounter(s, id)),
-      executeMove: (id) => _update((s) => GameEngine.executeMove(s, id)),
+      executeMove: (id, {bool precision = false}) =>
+          _update((s) => GameEngine.executeMove(s, id, precision: precision)),
       chooseEnding: (ending) => _update((s) => GameEngine.chooseEnding(s, ending)),
       resetGame: _resetGame,
       markFragmentViewed: (id) => _update((s) => s.copyWith(viewedFragments: <int>{...s.viewedFragments, id})),

@@ -153,6 +153,7 @@ class TabCore extends StatelessComponent {
             fontSize: 14.px,
             raw: {
               'line-height': '1.2',
+              'letter-spacing': '0',
               'text-shadow': '0 0 8px rgba(0,255,65,0.5)',
               'overflow-x': 'auto',
             },

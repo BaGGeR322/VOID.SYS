@@ -2,6 +2,7 @@ import 'package:jaspr/dom.dart';
 import 'package:jaspr/jaspr.dart';
 
 import '../components/ascii_bar.dart';
+import '../components/interactive_ascii.dart';
 import '../components/term_button.dart';
 import '../components/translated_text.dart';
 import '../game/ascii.dart';
@@ -107,7 +108,23 @@ class TabEncounter extends StatelessComponent {
       ]),
       div(classes: 'combat-arena', [
         div(classes: 'combat-daemon-side', [
-          pre(classes: 'daemon-portrait', [.text(portrait)]),
+          div(classes: 'daemon-portrait', [
+            InteractiveAscii(
+              text: portrait,
+              actions: [
+                AsciiAction(
+                  region: const AsciiRegion(col1: 4, row1: 2, col2: 27, row2: 4),
+                  onTap: () => actions.executeMove('STRIKE', precision: true),
+                  hoverHint: 'PRECISION STRIKE: 2x damage, 1.5x cost, 35% miss chance',
+                ),
+                AsciiAction(
+                  region: const AsciiRegion(col1: 4, row1: 5, col2: 27, row2: 7),
+                  onTap: () => actions.executeMove('STRIKE'),
+                  hoverHint: 'STRIKE: standard attack',
+                ),
+              ],
+            ),
+          ]),
           div(classes: 'daemon-hp-label', [.text('${enc.name} HP')]),
           AsciiBar(
             current: state.encounterEnemyHP?.toDouble() ?? 0,
@@ -115,6 +132,9 @@ class TabEncounter extends StatelessComponent {
             width: 20,
             showNumbers: true,
           ),
+          div(classes: 'portrait-hint', [
+            .text('[ hover portrait to target | HEAD=precision / BODY=standard ]'),
+          ]),
           if (state.enemyStunned) div(classes: 'stun-indicator', [.text('[ STUNNED ]')]),
         ]),
         div(classes: 'combat-player-side', [
@@ -272,12 +292,26 @@ class TabEncounter extends StatelessComponent {
       css('.combat-daemon-side').styles(
         raw: {'flex': '1', 'min-width': '260px'},
       ),
-      css('.daemon-portrait').styles(
-        margin: .only(bottom: 12.px),
-        color: const Color('#ff4466'),
-        fontFamily: const FontFamily('Space Mono'),
-        fontSize: 13.px,
-        raw: {'text-shadow': '0 0 6px rgba(255,64,102,0.3)'},
+      css('.daemon-portrait', [
+        css('&').styles(margin: .only(bottom: 12.px)),
+        css('& .interactive-ascii-pre').styles(
+          color: const Color('#ff4466'),
+          fontFamily: const FontFamily('Space Mono'),
+          fontSize: 13.px,
+          raw: {'text-shadow': '0 0 6px rgba(255,64,102,0.3)', 'line-height': '1.2'},
+        ),
+        css('& .ascii-overlay-btn:hover').styles(
+          raw: {
+            'background': 'rgba(255,64,102,0.12)',
+            'box-shadow': '0 0 4px rgba(255,64,102,0.3)',
+            'outline': '1px solid rgba(255,64,102,0.4)',
+          },
+        ),
+      ]),
+      css('.portrait-hint').styles(
+        color: const Color('#552233'),
+        fontSize: 11.px,
+        raw: {'margin-bottom': '6px', 'font-style': 'italic', 'line-height': '1.4'},
       ),
       css('.daemon-hp-label').styles(
         margin: .only(bottom: 4.px),

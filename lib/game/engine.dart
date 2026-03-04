@@ -246,7 +246,8 @@ class GameEngine {
     );
   }
 
-  static GameState executeMove(GameState state, String moveId) {
+  static GameState executeMove(GameState state, String moveId,
+      {bool precision = false}) {
     if (state.activeEncounterId == null) return state;
     final enc = GameData.encounterById(state.activeEncounterId!)!;
     final EncounterMove move;
@@ -255,19 +256,33 @@ class GameEngine {
     } catch (_) {
       return state;
     }
-    if (state.cycles < move.cycleCost) return state;
+
+    final double cycleCost =
+        precision ? (move.cycleCost * 1.5) : move.cycleCost;
+    if (state.cycles < cycleCost) return state;
 
     final rng = Random();
     var clog = [...state.combatLog];
 
-    int enemyHP = state.encounterEnemyHP! - move.damage;
-    clog.add('> YOU: ${move.name} — ${move.damage} damage');
+    final bool precisionHit = !precision || rng.nextDouble() > 0.35;
+    final int baseDamage = precision ? (move.damage * 2) : move.damage;
+    final int actualDamage = precisionHit ? baseDamage : 0;
+
+    if (precision && !precisionHit) {
+      clog.add('> YOU: ${move.name} [PRECISION] — MISSED');
+    } else if (precision) {
+      clog.add('> YOU: ${move.name} [PRECISION] — $actualDamage damage (x2)');
+    } else {
+      clog.add('> YOU: ${move.name} — $actualDamage damage');
+    }
+
+    int enemyHP = state.encounterEnemyHP! - actualDamage;
 
     if (enemyHP <= 0) {
       clog.add('> ${enc.name.toUpperCase()}: silenced.');
       return _resolveVictory(
         state.copyWith(
-          cycles: state.cycles - move.cycleCost,
+          cycles: state.cycles - cycleCost,
           encounterEnemyHP: 0,
           combatLog: clog,
         ),
@@ -284,7 +299,7 @@ class GameEngine {
     if (state.enemyStunned) {
       clog.add('> ${enc.name}: [STUNNED — skips turn]');
       return state.copyWith(
-        cycles: state.cycles - move.cycleCost,
+        cycles: state.cycles - cycleCost,
         encounterEnemyHP: enemyHP,
         encounterPhase: phase,
         enemyStunned: false,
@@ -297,7 +312,7 @@ class GameEngine {
 
     int playerHP = state.playerHP;
     int maxPlayerHP = state.maxPlayerHP;
-    double cycles = state.cycles - move.cycleCost;
+    double cycles = state.cycles - cycleCost;
     String note = '';
 
     if (dMove.effect == 'drain_cycles') {

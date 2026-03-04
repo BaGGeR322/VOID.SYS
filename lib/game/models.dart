@@ -301,7 +301,7 @@ class Actions {
   final void Function(String) switchTab;
   final void Function(String) purchaseUpgrade;
   final void Function(int) startEncounter;
-  final void Function(String) executeMove;
+  final void Function(String, {bool precision}) executeMove;
   final void Function(String) chooseEnding;
   final void Function() resetGame;
   final void Function(int) markFragmentViewed;

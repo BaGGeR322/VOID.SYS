@@ -7,6 +7,8 @@
 import 'package:jaspr/server.dart';
 import 'package:test_server/components/ascii_bar.dart' as _ascii_bar;
 import 'package:test_server/components/glitch_text.dart' as _glitch_text;
+import 'package:test_server/components/interactive_ascii.dart'
+    as _interactive_ascii;
 import 'package:test_server/components/settings_panel.dart' as _settings_panel;
 import 'package:test_server/components/term_button.dart' as _term_button;
 import 'package:test_server/components/translated_text.dart'
@@ -40,16 +42,12 @@ import 'package:test_server/app.dart' as _app;
 /// ```
 ServerOptions get defaultServerOptions => ServerOptions(
   clients: {
-    _translated_text.TranslatedText:
-        ClientTarget<_translated_text.TranslatedText>(
-          'translated_text',
-          params: __translated_textTranslatedText,
-        ),
     _game_root.GameRoot: ClientTarget<_game_root.GameRoot>('game_root'),
   },
   styles: () => [
     ..._ascii_bar.AsciiBar.styles,
     ..._glitch_text.GlitchText.styles,
+    ..._interactive_ascii.InteractiveAscii.styles,
     ..._settings_panel.SettingsPanel.styles,
     ..._term_button.TermButton.styles,
     ..._translated_text.TranslatedText.styles,
@@ -65,11 +63,3 @@ ServerOptions get defaultServerOptions => ServerOptions(
     ..._app.App.styles,
   ],
 );
-
-Map<String, Object?> __translated_textTranslatedText(
-  _translated_text.TranslatedText c,
-) => {
-  'translationKey': c.translationKey,
-  'fallback': c.fallback,
-  'longForm': c.longForm,
-};

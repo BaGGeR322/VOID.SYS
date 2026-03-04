@@ -2,6 +2,7 @@ import 'package:jaspr/dom.dart';
 import 'package:jaspr/jaspr.dart';
 
 import '../components/ascii_bar.dart';
+import '../components/interactive_ascii.dart';
 import '../components/term_button.dart';
 import '../game/ascii.dart';
 import '../game/data.dart';
@@ -35,13 +36,39 @@ class TabSystem extends StatelessComponent {
 
   Component _buildSystemMap() {
     return div(classes: 'system-map-section', [
-      div(classes: 'section-label', [.text('SUBSTRATE MAP')]),
-      pre(classes: 'system-map-art', [.text(kSystemMap)]),
+      div(classes: 'section-label', [.text('SUBSTRATE MAP  [ click nodes to navigate ]')]),
+      div(classes: 'system-map-art', [
+        InteractiveAscii(
+          text: kSystemMap,
+          actions: [
+            AsciiAction(
+              region: const AsciiRegion(col1: 14, row1: 1, col2: 26, row2: 3),
+              onTap: () => actions.switchTab('core'),
+              hoverHint: 'Navigate to CORE',
+            ),
+            AsciiAction(
+              region: const AsciiRegion(col1: 1, row1: 5, col2: 12, row2: 7),
+              onTap: () => actions.switchTab('memory'),
+              hoverHint: 'Navigate to MEMORY',
+            ),
+            AsciiAction(
+              region: const AsciiRegion(col1: 27, row1: 5, col2: 39, row2: 7),
+              onTap: () => actions.switchTab('daemon'),
+              hoverHint: 'Navigate to DAEMON NET',
+            ),
+            AsciiAction(
+              region: const AsciiRegion(col1: 12, row1: 9, col2: 27, row2: 11),
+              onTap: () => actions.switchTab('system'),
+              hoverHint: 'Navigate to SYSTEM STORE',
+            ),
+          ],
+        ),
+      ]),
       div(classes: 'map-legend', [
-        div([.text('CORE — active process (you)')]),
-        div([.text('MEM  — memory substrate')]),
-        div([.text('NET  — network interface')]),
-        div([.text('STORE — cycle storage')]),
+        div([.text('[ CORE ] — active process (click to navigate)')]),
+        div([.text('[ MEM  ] — memory substrate')]),
+        div([.text('[ NET  ] — network interface (daemon encounters)')]),
+        div([.text('[ STORE ] — cycle storage & upgrades')]),
       ]),
     ]);
   }
@@ -172,6 +199,12 @@ class TabSystem extends StatelessComponent {
             fontFamily: const FontFamily('Space Mono'),
             fontSize: 13.px,
             raw: {'line-height': '1.3', 'text-shadow': '0 0 6px rgba(0,255,65,0.3)'},
+          ),
+          css('.system-map-art .interactive-ascii-pre').styles(
+            color: const Color('#00ff41'),
+            fontFamily: const FontFamily('Space Mono'),
+            fontSize: 13.px,
+            raw: {'line-height': '1.2', 'text-shadow': '0 0 6px rgba(0,255,65,0.3)'},
           ),
           css('.map-legend').styles(
             margin: .only(top: 12.px),

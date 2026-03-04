@@ -3,7 +3,6 @@ import 'package:jaspr/jaspr.dart';
 
 import '../services/translation_service.dart';
 
-@client
 class TranslatedText extends StatefulComponent {
   const TranslatedText({
     required this.translationKey,
