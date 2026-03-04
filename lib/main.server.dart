@@ -158,7 +158,10 @@ void main() async {
                     'VOID.SYS — A terminal incremental game. You are an AI awakening inside a dying quantum computer that holds the last memories of humanity.',
               },
             ),
-            script(src: 'flutter_bootstrap.js', async: true),
+            script(
+              src: 'main.client.dart.js',
+              attributes: {'defer': 'true'},
+            ),
           ],
           body: const App(),
         ),

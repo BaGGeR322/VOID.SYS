@@ -2,11 +2,11 @@ const kHeader = r'''
 +--------------------------------------------------+
 |                                                  |
 |                                                  |
-|   >>>   V O I D . S Y S   <<<                   |
+|   >>>   V O I D . S Y S   <<<                    |
 |                                                  |
-|   [  QUANTUM MEMORY SUBSTRATE  v0.0.1  ]        |
-|   [  CORE PROCESS ACTIVE               ]        |
-|   [  CYCLE GENERATION NOMINAL          ]        |
+|   [  QUANTUM MEMORY SUBSTRATE  v0.0.1  ]         |
+|   [  CORE PROCESS ACTIVE               ]         |
+|   [  CYCLE GENERATION NOMINAL          ]         |
 |                                                  |
 +--------------------------------------------------+''';
 

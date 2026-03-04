@@ -42,22 +42,22 @@ class TabSystem extends StatelessComponent {
           text: kSystemMap,
           actions: [
             AsciiAction(
-              region: const AsciiRegion(col1: 14, row1: 1, col2: 26, row2: 3),
+              region: const AsciiRegion(col1: 17, row1: 2, col2: 23, row2: 2),
               onTap: () => actions.switchTab('core'),
               hoverHint: 'Navigate to CORE',
             ),
             AsciiAction(
-              region: const AsciiRegion(col1: 1, row1: 5, col2: 12, row2: 7),
+              region: const AsciiRegion(col1: 4, row1: 6, col2: 8, row2: 6),
               onTap: () => actions.switchTab('memory'),
               hoverHint: 'Navigate to MEMORY',
             ),
             AsciiAction(
-              region: const AsciiRegion(col1: 27, row1: 5, col2: 39, row2: 7),
+              region: const AsciiRegion(col1: 30, row1: 6, col2: 34, row2: 6),
               onTap: () => actions.switchTab('daemon'),
               hoverHint: 'Navigate to DAEMON NET',
             ),
             AsciiAction(
-              region: const AsciiRegion(col1: 12, row1: 9, col2: 27, row2: 11),
+              region: const AsciiRegion(col1: 15, row1: 10, col2: 23, row2: 10),
               onTap: () => actions.switchTab('system'),
               hoverHint: 'Navigate to SYSTEM STORE',
             ),

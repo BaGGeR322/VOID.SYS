@@ -41,6 +41,7 @@ import 'package:test_server/app.dart' as _app;
 /// }
 /// ```
 ServerOptions get defaultServerOptions => ServerOptions(
+  clientId: 'main.client.dart.js',
   clients: {
     _game_root.GameRoot: ClientTarget<_game_root.GameRoot>('game_root'),
   },
